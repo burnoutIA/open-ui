@@ -153,18 +153,37 @@ async function snapshotComponent(page, baseUrl, entry, widths, extraProps) {
   return { files, axe: [...axe.values()], cases: cases.length }
 }
 
-async function snapshotPage(page, baseUrl, entry, widths) {
+async function snapshotPage(page, baseUrl, entry, widths, extraProps) {
+  const cases = buildCases(entry, extraProps)
   const files = []
-  await page.goto(`${baseUrl}/${encodeURIComponent(entry.id)}.html`)
-  await page.waitForLoadState('networkidle')
-  await page.evaluate(() => document.fonts.ready)
-  for (const width of widths) {
-    await page.setViewportSize({ width, height: 900 })
-    const file = path.join(OUT_DIR, `page-${entry.id}-${width}.png`)
-    await page.screenshot({ path: file, fullPage: true })
-    files.push(file)
+  const axe = new Map()
+
+  for (const [index, testCase] of cases.entries()) {
+    const html = await render(baseUrl, 'page', entry.id, testCase.props)
+    // Vraie navigation vers l'URL de la page, servie avec le HTML du cas : chemins absolus et
+    // modules JS se chargent comme en conditions réelles (setContent ne réexécuterait pas les modules).
+    const pageUrl = `${baseUrl}/${encodeURIComponent(entry.id)}.html`
+    await page.route(pageUrl, (route) => route.fulfill({ body: html, contentType: 'text/html; charset=utf-8' }))
+    await page.goto(pageUrl, { waitUntil: 'networkidle' })
+    await page.unroute(pageUrl)
+    await page.evaluate(() => document.fonts.ready)
+
+    const suffix = index === 0 ? '' : `-${index}`
+    for (const width of widths) {
+      await page.setViewportSize({ width, height: 900 })
+      const file = path.join(OUT_DIR, `page-${entry.id}${suffix}-${width}.png`)
+      await page.screenshot({ path: file, fullPage: true })
+      files.push(`${file}  (${testCase.label})`)
+    }
+
+    for (const violation of await runAxe(page, 'html')) {
+      const known = axe.get(violation.id) ?? { ...violation, targets: [] }
+      known.targets.push(...violation.targets.map((target) => `[${testCase.label}] ${target}`))
+      axe.set(violation.id, known)
+    }
   }
-  return { files, axe: await runAxe(page, 'html'), cases: 1 }
+
+  return { files, axe: [...axe.values()], cases: cases.length }
 }
 
 async function main() {
@@ -187,7 +206,7 @@ async function main() {
     fs.mkdirSync(OUT_DIR, { recursive: true })
     const page = await browser.newPage()
     const result = entryType === 'page'
-      ? await snapshotPage(page, server.url, entry, widths)
+      ? await snapshotPage(page, server.url, entry, widths, extraProps)
       : await snapshotComponent(page, server.url, entry, widths, extraProps)
 
     console.log(`Snapshot ${entryType}/${entryId} — ${result.cases} cas, largeurs ${widths.join(', ')} px`)

@@ -1,0 +1,28 @@
+// =============================================================================
+// Page — squelette header / main / footer
+// =============================================================================
+//
+//   <body class="page">
+//     header…
+//     <main id="contenu" class="page__main" tabindex="-1">…</main>
+//     footer…
+//   </body>
+//
+// Le contenu principal s'étire : le footer reste en bas même sur une page courte.
+
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+
+  &__main {
+    flex: 1;
+    padding-block: var(--spacing-xl) var(--spacing-2xl);
+
+    // Cible du lien d'évitement : focalisable par script, sans anneau sur toute la zone.
+    &:focus {
+      outline: none;
+    }
+  }
+}
