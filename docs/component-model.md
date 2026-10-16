@@ -12,6 +12,7 @@ Open UI est un workspace de design system agent-first. Le modele composant doit 
 - Le JSON est la source de verite des metadonnees, controles, relations et defaults exposables.
 - Le Twig est le rendu, sans logique metier.
 - Le Markdown explique l'usage, les props, l'accessibilite et les exemples.
+- Un composant interactif ajoute `[name].js` : module sans initialisation, delegation d'evenements sur `document`, cible ses elements par `data-[name]-*`, importe dans le point d'entree JS (`scriptEntry`, par defaut `dev/assets/js/main.js`).
 - Les styles suivent le mode de `openui.config.json` : feuille `_[name].scss` importee dans le point d'entree en SCSS (`docs/styling-scss.md`), classes utilitaires dans le Twig en Tailwind (`docs/styling-tailwind.md`).
 - Un composant doit etre reutilise avant d'etre recree.
 - Modifier une page signifie souvent modifier un composant ou une configuration de composant, pas patcher la page directement.

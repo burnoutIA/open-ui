@@ -28,8 +28,16 @@ Chaque composant `[nom]` en `kebab-case` vit dans `dev/components/` :
 dev/components/[nom]/
 |- [nom].json   <- Source de verite : metadonnees + controles de l’espace de travail
 |- [nom].twig   <- Template de rendu
-`- [nom].md     <- Documentation obligatoire
+|- [nom].md     <- Documentation obligatoire
+`- [nom].js     <- Comportement, seulement si le composant est interactif
 ```
+
+Script d'un composant (`[nom].js`), s'il en faut un :
+- module ES sans export ni initialisation : il ecoute au niveau de `document` (delegation d'evenements), ce qui le rend actif sur une page comme dans le Showcase, et sur du HTML ajoute plus tard
+- le composant cible ses elements par des attributs `data-[nom]-*`, jamais par ses classes de style
+- amelioration progressive : sans JavaScript, le contenu reste accessible (ex. navigation affichee en liste)
+- import manuel dans le point d'entree JS du projet (`scriptEntry`, par defaut `dev/assets/js/main.js`) : `import '../../components/[nom]/[nom].js'` ; `npm run health` signale un import manquant
+- une page charge ce point d'entree : `<script type="module" src="/dev/assets/js/main.js"></script>`
 
 Structure imposee pour `[nom].md` :
 
@@ -394,12 +402,7 @@ Regles absolues :
 - classes selon le mode de style (section 5) : BEM en SCSS, tables d'utilitaires en Tailwind
 - pas de styles inline
 - accessibilite integree des la conception
-- HTML genere propre : les devs copient le HTML depuis le Showcase, il ne doit contenir ni ligne vide ni espaces parasites
-
-Controle des espaces (Twig supprime le saut de ligne qui suit une balise `{% %}`, pas l'indentation) :
-- terminer le dernier `{% set %}` de l'en-tete par `-%}`
-- coller chaque attribut conditionnel a la ligne precedente : `{%- if disabled %} disabled{% endif %}`
-- verifier le HTML dans le panneau `HTML genere` du Showcase ou avec `npm run snapshot`
+- HTML copiable : le Showcase reformate le HTML affiche et copie (indentation, une balise de bloc par ligne), sans changer le rendu. Pas besoin de controle d'espaces Twig ; seule regle : pas de blanc au bord d'un element en ligne (`<a href="/">Accueil</a>`, pas `<a href="/">\n  Accueil\n</a>`), car ce blanc fait partie du rendu
 
 Exemple atom :
 
@@ -408,12 +411,9 @@ Exemple atom :
 {% set size     = size|default('md') %}
 {% set full     = full|default(false) %}
 {% set disabled = disabled|default(false) %}
-{% set text     = text|default('Cliquez ici') -%}
+{% set text     = text|default('Cliquez ici') %}
 
-<button class="btn btn--{{ variant }} btn--{{ size }}{% if full %} btn--full{% endif %}" type="button"
-  {%- if disabled %} disabled{% endif %}>
-  {{ text }}
-</button>
+<button class="btn btn--{{ variant }} btn--{{ size }}{% if full %} btn--full{% endif %}" type="button"{% if disabled %} disabled{% endif %}>{{ text }}</button>
 ```
 
 Exemple molecule :

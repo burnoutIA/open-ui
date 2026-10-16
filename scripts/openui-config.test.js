@@ -22,7 +22,8 @@ describe('loadOpenUIConfig', () => {
     const dir = workspace()
     expect(loadOpenUIConfig(dir)).toEqual({
       styling: 'scss',
-      styleEntry: path.join(dir, 'dev/assets/scss/style.scss')
+      styleEntry: path.join(dir, 'dev/assets/scss/style.scss'),
+      scriptEntry: path.join(dir, 'dev/assets/js/main.js')
     })
   })
 

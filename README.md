@@ -67,7 +67,7 @@ Le mode de style se choisit en début de projet dans `openui.config.json` :
 | `scss` (défaut, ou fichier absent) | `dev/assets/scss/components/_button.scss`, importé dans `style.scss` | `templates/scss/` | [docs/styling-scss.md](./docs/styling-scss.md) |
 | `tailwind` | classes utilitaires dans `button.twig`, tokens dans `@theme` | `templates/tailwind/style.css` | [docs/styling-tailwind.md](./docs/styling-tailwind.md) |
 
-`styleEntry` est facultatif : par défaut `dev/assets/scss/style.scss` en SCSS et `dev/assets/css/style.css` en Tailwind. Relancer `npm run dev` après un changement de configuration.
+`styleEntry` est facultatif : par défaut `dev/assets/scss/style.scss` en SCSS et `dev/assets/css/style.css` en Tailwind. `scriptEntry` (par défaut `dev/assets/js/main.js`) est le point d'entrée JS qui importe le script des composants interactifs. Relancer `npm run dev` après un changement de configuration.
 
 ## Poser les tokens (étape 1)
 
@@ -88,7 +88,8 @@ Chaque composant canonique vit dans son propre dossier :
 dev/components/button/
 |- button.json
 |- button.twig
-`- button.md
+|- button.md
+`- button.js      (seulement si le composant est interactif, importé dans dev/assets/js/main.js)
 ```
 
 Le JSON décrit les métadonnées, variantes et contenus modifiables. Le Showcase transforme ces déclarations en contrôles humains, rerend le Twig à chaque modification et maintient le HTML affiché à jour.

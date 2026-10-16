@@ -43,6 +43,7 @@ export function getComponentEntries() {
       jsonPath,
       twigPath: path.join(dir, `${id}.twig`),
       mdPath: path.join(dir, `${id}.md`),
+      jsPath: path.join(dir, `${id}.js`),
       scssPath: SCSS_DIR && path.join(SCSS_DIR, 'components', `_${id}.scss`),
       schema: readJson(jsonPath)
     }

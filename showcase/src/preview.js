@@ -1,4 +1,6 @@
 import 'virtual:openui-project-styles'
+// Scripts des composants : délégation d'événements sur document, ils s'appliquent aussi au HTML monté plus tard.
+import 'virtual:openui-project-scripts'
 import { SHOWCASE_API, SHOWCASE_MESSAGES, SHOWCASE_PREVIEW_SOURCE, SHOWCASE_SOURCE } from '../shared/protocol.js'
 import { normalizeAxeResults } from './quality-state.js'
 

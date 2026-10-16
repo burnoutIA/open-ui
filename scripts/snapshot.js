@@ -79,7 +79,9 @@ function escapeHtml(value) {
 }
 
 async function runAxe(page, selector) {
-  await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') })
+  if (!(await page.evaluate(() => Boolean(window.axe)))) {
+    await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') })
+  }
   return page.evaluate(async (context) => {
     const result = await window.axe.run(context, { resultTypes: ['violations'] })
     return result.violations.map((violation) => ({
@@ -96,6 +98,7 @@ async function snapshotComponent(page, baseUrl, entry, widths, extraProps) {
   const cells = []
   for (const testCase of cases) {
     const html = await render(baseUrl, 'component', entry.id, testCase.props)
+    testCase.html = html
     cells.push(`<figure class="openui-snap__case" data-case="${escapeHtml(testCase.label)}"><figcaption>${escapeHtml(testCase.label)}</figcaption><div class="openui-snap__render">${html}</div></figure>`)
   }
 
@@ -136,7 +139,18 @@ async function snapshotComponent(page, baseUrl, entry, widths, extraProps) {
     files.push(file)
   }
 
-  return { files, axe: await runAxe(page, '#preview-root'), cases: cases.length }
+  // Axe cas par cas : sur la planche, deux headers ou deux champs dupliqueraient landmarks et id.
+  const axe = new Map()
+  for (const testCase of cases) {
+    await page.evaluate((html) => { document.querySelector('#preview-root').innerHTML = html }, testCase.html)
+    for (const violation of await runAxe(page, '#preview-root')) {
+      const known = axe.get(violation.id) ?? { ...violation, targets: [] }
+      known.targets.push(...violation.targets.map((target) => `[${testCase.label}] ${target}`))
+      axe.set(violation.id, known)
+    }
+  }
+
+  return { files, axe: [...axe.values()], cases: cases.length }
 }
 
 async function snapshotPage(page, baseUrl, entry, widths) {

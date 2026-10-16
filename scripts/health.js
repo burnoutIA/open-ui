@@ -9,6 +9,8 @@ const pages = getPageEntries()
 const componentIds = new Set(components.map((component) => component.id))
 const stylePath = OPENUI_CONFIG.styleEntry
 const styleContent = fs.existsSync(stylePath) ? fs.readFileSync(stylePath, 'utf8') : ''
+const scriptPath = OPENUI_CONFIG.scriptEntry
+const scriptContent = fs.existsSync(scriptPath) ? fs.readFileSync(scriptPath, 'utf8') : ''
 
 function add(status, scope, file, message, detail = '') {
   checks.push({ status, scope, file, message, detail })
@@ -95,7 +97,7 @@ function checkRefs(file, refs) {
 }
 
 function checkComponent(component) {
-  const { id, jsonPath, twigPath, scssPath, mdPath, schema } = component
+  const { id, jsonPath, twigPath, scssPath, mdPath, jsPath, schema } = component
   const dirName = path.basename(component.dir)
   const twigName = basenameNoExt(twigPath)
 
@@ -113,6 +115,12 @@ function checkComponent(component) {
   if (scssPath && !fs.existsSync(scssPath)) add('error', 'files', scssPath, 'SCSS composant absent')
   if (scssPath && fs.existsSync(scssPath) && !hasScssImport(scssPath)) {
     add('error', 'scss', stylePath, `Import SCSS manquant pour ${id}`, scssImportHint(scssPath))
+  }
+
+  // Script de composant : chargé seulement s'il est importé par le point d'entrée JS du projet.
+  if (fs.existsSync(jsPath) && !scriptContent.includes(`components/${id}/${id}.js`)) {
+    const hint = `import '${path.relative(path.dirname(scriptPath), jsPath).replaceAll(path.sep, '/')}'`
+    add('error', 'scripts', scriptPath, `Import JS manquant pour ${id}`, hint)
   }
 
   checkDocumentation(mdPath)

@@ -5,7 +5,7 @@ import Twig from 'twig'
 import { SHOWCASE_API } from './showcase/shared/protocol.js'
 import { getShowcaseCatalog, getShowcaseEntry, normalizeShowcaseProps } from './showcase/server/catalog.js'
 import { readJsonBody, sendJson } from './showcase/server/http.js'
-import { EMPTY_PROJECT_STYLESHEET } from './showcase/server/project-style.js'
+import { EMPTY_PROJECT_SCRIPT, EMPTY_PROJECT_STYLESHEET } from './showcase/server/project-style.js'
 import { validateHtmlWithW3c } from './showcase/server/html-validator.js'
 import { loadOpenUIConfig } from './scripts/openui-config.js'
 
@@ -21,6 +21,9 @@ const FULL_RELOAD_DELAY = 150
 const PROJECT_STYLESHEET_ID = 'virtual:openui-project-styles'
 // L'extension du module résolu choisit le pipeline Vite : Sass ou CSS (Tailwind).
 const RESOLVED_PROJECT_STYLESHEET_ID = `\0${PROJECT_STYLESHEET_ID}.${CONFIG.styling === 'tailwind' ? 'css' : 'scss'}`
+const PROJECT_SCRIPT = CONFIG.scriptEntry
+const PROJECT_SCRIPT_ID = 'virtual:openui-project-scripts'
+const RESOLVED_PROJECT_SCRIPT_ID = `\0${PROJECT_SCRIPT_ID}.js`
 
 // Les includes utilisent des chemins depuis la racine ('dev/components/...')
 // settings.views = ROOT indique à twig 3.x d'utiliser ROOT comme base de résolution.
@@ -147,12 +150,17 @@ function openUIPlugin() {
     // Le vrai fichier quand il existe : Vite y applique Sass ou Tailwind et résout les url() relatives
     // (polices, images). Sinon, une feuille vide virtuelle pour un workspace qui démarre.
     resolveId(id) {
-      if (id !== PROJECT_STYLESHEET_ID) return
-      return fs.existsSync(PROJECT_STYLESHEET) ? PROJECT_STYLESHEET : RESOLVED_PROJECT_STYLESHEET_ID
+      if (id === PROJECT_STYLESHEET_ID) {
+        return fs.existsSync(PROJECT_STYLESHEET) ? PROJECT_STYLESHEET : RESOLVED_PROJECT_STYLESHEET_ID
+      }
+      if (id === PROJECT_SCRIPT_ID) {
+        return fs.existsSync(PROJECT_SCRIPT) ? PROJECT_SCRIPT : RESOLVED_PROJECT_SCRIPT_ID
+      }
     },
 
     load(id) {
       if (id === RESOLVED_PROJECT_STYLESHEET_ID) return EMPTY_PROJECT_STYLESHEET
+      if (id === RESOLVED_PROJECT_SCRIPT_ID) return EMPTY_PROJECT_SCRIPT
     },
 
     // Build : rend chaque page Twig → HTML temporaire, passé à Rollup comme entrée
@@ -193,10 +201,15 @@ function openUIPlugin() {
 
     // Dev : rendu Twig à la volée + preview des esquisses hors DS canonique
     configureServer(server) {
-      // Création ou suppression du point d'entrée : les modules qui l'importent doivent le résoudre à nouveau.
-      const onStylesheetPresenceChange = (file) => {
-        if (path.resolve(file) !== PROJECT_STYLESHEET) return
-        for (const id of [RESOLVED_PROJECT_STYLESHEET_ID, PROJECT_STYLESHEET]) {
+      // Création ou suppression d'un point d'entrée (styles ou scripts) : ses importeurs doivent le résoudre à nouveau.
+      const entryIds = {
+        [PROJECT_STYLESHEET]: [RESOLVED_PROJECT_STYLESHEET_ID, PROJECT_STYLESHEET],
+        [PROJECT_SCRIPT]: [RESOLVED_PROJECT_SCRIPT_ID, PROJECT_SCRIPT]
+      }
+      const onEntryPresenceChange = (file) => {
+        const ids = entryIds[path.resolve(file)]
+        if (!ids) return
+        for (const id of ids) {
           const module = server.moduleGraph.getModuleById(id)
           if (!module) continue
           for (const importer of module.importers) server.moduleGraph.invalidateModule(importer)
@@ -204,8 +217,8 @@ function openUIPlugin() {
         }
         server.ws.send({ type: 'full-reload' })
       }
-      server.watcher.on('add', onStylesheetPresenceChange)
-      server.watcher.on('unlink', onStylesheetPresenceChange)
+      server.watcher.on('add', onEntryPresenceChange)
+      server.watcher.on('unlink', onEntryPresenceChange)
 
       server.middlewares.use(async (req, res, next) => {
         const pathname = new URL(req.url, 'http://localhost').pathname
