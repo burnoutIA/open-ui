@@ -151,7 +151,7 @@ Le Showcase ne réécrit jamais les JSON : les modifications faites dans son for
 | `npm run graph:check` | Vérifie que l’index correspond aux sources |
 | `npm run list` | Liste les composants et les pages détectés |
 | `npm run impact -- <composant>` | Cartographie les usages d’un composant |
-| `npm run skills:build -- --target codex` | Génère uniquement les skills du harnais demandé |
+| `npm run skills:build -- --target codex` | Génère uniquement les skills du harnais demandé ; redémarrer ensuite la session de l'agent pour qu'il les charge |
 | `npm run skills:check -- --target codex` | Vérifie qu'une sortie de skills correspond à `skill-src/` |
 | `npm run clean` | Supprime la sortie générée `public/` |
 
