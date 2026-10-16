@@ -126,7 +126,13 @@ async function snapshotComponent(page, baseUrl, entry, widths, extraProps) {
   const focused = await page.evaluate(() => document.activeElement?.closest('.openui-snap__case') ? document.activeElement.outerHTML.slice(0, 80) : null)
   if (focused) {
     const file = path.join(OUT_DIR, `${entry.id}-focus.png`)
-    await page.locator('.openui-snap__case').first().screenshot({ path: file })
+    // Marge autour du cas : l'anneau de focus est dessiné à l'extérieur de l'élément.
+    const box = await page.locator('.openui-snap__case').first().boundingBox()
+    const margin = 12
+    await page.screenshot({
+      path: file,
+      clip: { x: Math.max(0, box.x - margin), y: Math.max(0, box.y - margin), width: box.width + margin * 2, height: box.height + margin * 2 }
+    })
     files.push(file)
   }
 
