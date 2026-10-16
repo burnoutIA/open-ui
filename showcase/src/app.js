@@ -766,7 +766,8 @@ function handlePreviewMessage(event) {
   }
 
   if (event.data.type === SHOWCASE_MESSAGES.resize) {
-    const height = Math.max(448, Math.min(Number(event.data.height) || 448, 900))
+    // L'aperçu prend la hauteur de son contenu : c'est la zone canvas qui défile, pas l'iframe.
+    const height = Math.max(448, Number(event.data.height) || 448)
     elements.previewFrame.style.height = `${height}px`
   }
 }
