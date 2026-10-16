@@ -142,15 +142,28 @@ function injectAxe(frame, source) {
   return frameWindow.axe
 }
 
+// Débordement horizontal, en px : un composant plus large que son conteneur, ou une page plus large
+// que la fenêtre (défilement horizontal, critère RGAA 10.11). Le débordement reste visible, sans barre.
+function measureOverflow() {
+  if (document.body.dataset.entryType === 'page') {
+    const pageRoot = pageFrame.contentDocument?.documentElement
+    return pageRoot ? Math.max(0, pageRoot.scrollWidth - pageRoot.clientWidth) : 0
+  }
+  return Math.max(0, root.scrollWidth - root.clientWidth)
+}
+
 function reportHeight() {
+  const overflow = measureOverflow()
+  root.classList.toggle('preview-mount--overflow', overflow > 0)
+
   if (document.body.dataset.entryType === 'page') {
     const pageHeight = syncPageHeight()
-    postToShowcase(SHOWCASE_MESSAGES.resize, { height: pageHeight })
+    postToShowcase(SHOWCASE_MESSAGES.resize, { height: pageHeight, overflow })
     return
   }
 
   const rootHeight = Math.ceil(root.getBoundingClientRect().height)
-  postToShowcase(SHOWCASE_MESSAGES.resize, { height: rootHeight + 96 })
+  postToShowcase(SHOWCASE_MESSAGES.resize, { height: rootHeight + 96, overflow })
 }
 
 function mountComponent(html, entry) {

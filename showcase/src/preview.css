@@ -35,6 +35,21 @@
   min-width: 0;
 }
 
+/* Le conteneur du composant est dessiné : on voit la limite qu'il doit respecter.
+   Pas de barre de défilement : un débordement reste visible tel quel, signalé en rouge et dans le Showcase. */
+.preview-document[data-entry-type="component"] {
+  overflow-x: clip;
+}
+
+.preview-document[data-entry-type="component"] .preview-mount {
+  outline: 1px dashed #aeb7b2;
+  outline-offset: 0.5rem;
+}
+
+.preview-document[data-entry-type="component"] .preview-mount--overflow {
+  outline: 2px dashed #b42318;
+}
+
 .page-preview {
   display: block;
   width: 100%;

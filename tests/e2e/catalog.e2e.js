@@ -69,6 +69,8 @@ for (const entry of entries) {
     await expect(badge, 'Axe doit tourner dans le Showcase').not.toHaveText(/indisponible/)
     await expect(badge).toHaveAttribute('data-status', /^(pass|review)$/)
     await expect(page.locator('#component-meta')).not.toContainText('undefined')
+    // Composant dans son conteneur, page sans défilement horizontal.
+    await expect(page.locator('#overflow-badge')).toHaveText('Débordement · aucun')
 
     // Une seule zone de défilement : ni le document d'aperçu ni l'iframe d'une page ne défilent.
     const preview = page.frames().find((frame) => frame.url().includes('/showcase/preview.html'))

@@ -47,6 +47,7 @@ const elements = {
   w3cSummary: document.querySelector('#w3c-summary'),
   w3cResults: document.querySelector('#w3c-results'),
   axeBadge: document.querySelector('#axe-badge'),
+  overflowBadge: document.querySelector('#overflow-badge'),
   axeSummary: document.querySelector('#axe-summary'),
   axeResults: document.querySelector('#axe-results'),
   background: document.querySelector('#preview-background')
@@ -769,6 +770,12 @@ function handlePreviewMessage(event) {
     // L'aperçu prend la hauteur de son contenu : c'est la zone canvas qui défile, pas l'iframe.
     const height = Math.max(448, Number(event.data.height) || 448)
     elements.previewFrame.style.height = `${height}px`
+
+    // Composant plus large que son conteneur, ou page plus large que la fenêtre.
+    const overflow = Number(event.data.overflow) || 0
+    setQualityBadge(elements.overflowBadge, overflow > 0 ? 'fail' : 'pass', overflow > 0
+      ? `Débordement · ${overflow} px`
+      : 'Débordement · aucun')
   }
 }
 
