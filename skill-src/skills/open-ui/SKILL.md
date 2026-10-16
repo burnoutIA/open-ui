@@ -35,7 +35,7 @@ L'effort premier porte sur la structure durable du projet : comprendre les compo
 - `docs/component-model.md` : modèle composants/pages/relations.
 - `docs/impact-analysis.md` : protocole d'analyse d'impact.
 - `docs/agent-workflow.md` : workflow agent-first.
-- `docs/design-tokens.md` : règles tokens/design system.
+- `docs/design-tokens.md` : tokens (palette + rôles, contrastes garantis), étape 1 avant tout composant.
 - `docs/project-workspaces.md` : cible multi-projets.
 - `docs/sketches.md` : différence esquisse vs composant canonique et tunnel maquette libre.
 - `.openui/graph.json` : index local compact des composants, pages, relations transitives et statuts ; le régénérer avec `npm run graph`, ne jamais l'éditer directement.
@@ -54,11 +54,11 @@ L'effort premier porte sur la structure durable du projet : comprendre les compo
 - Avant toute implémentation, se demander explicitement : "ai-je toutes les informations nécessaires pour réaliser cette tâche correctement ?" Si non, poser les précisions minimales avant de produire.
 - Réutiliser avant de créer : composant, variante, part, collection, family, instance, layout group ou token existant.
 - Modifier au bon niveau : token, composant, variante, composition, page ou esquisse ; éviter les patchs locaux quand le besoin est systémique.
-- Préserver les tokens et conventions de style du mode configuré (`docs/styling-scss.md` ou `docs/styling-tailwind.md`, ne lire que celle-là) : pas de valeurs magiques si un token existe ou devrait exister.
+- Tokens d'abord : pas d'atome sans tokens posés (`docs/design-tokens.md`). Un composant n'utilise que les rôles (`--color-primary`, `--color-text`…), jamais la palette ni une valeur magique. Conventions du mode configuré : `docs/styling-scss.md` ou `docs/styling-tailwind.md`, ne lire que celle-là.
 - Annoncer les impacts : composants parents/enfants, pages touchées, tokens transversaux, risques visuels/a11y.
 - Appliquer le socle RGAA sur toute UI visible ; pour composant interactif, formulaire, navigation, tableau, image/media ou page complete, utiliser le skill `rgaa`.
 - Valider après modification : au minimum `npm run validate`; si styles/rendu changent, ajouter `npm run lint:scss` (mode SCSS) et `npm run build`; si composant partagé, ajouter `npm run impact <nom>`.
-- Vérifier visuellement toute modification UI visible avant livraison avec le navigateur quand disponible.
+- Vérifier visuellement toute modification UI visible avant livraison : `npm run snapshot -- <nom>` (captures mobile/desktop, focus clavier, Axe ; `--props '{...}'` pour un état précis), puis relire les captures.
 - Ne jamais présenter une maquette libre comme un composant stable : elle doit être isolée, marquée exploratoire et non référencée par défaut dans le design system canonique.
 
 ## Modes de travail
@@ -135,7 +135,7 @@ Avant d'écrire, surtout si la demande est peu cadrée, touche un composant part
 5. Vérifier impacts et usages.
 6. Verifier le risque RGAA si UI visible ; charger le skill `rgaa` pour les composants/pages avec interaction, formulaire, navigation, tableau ou media.
 7. Tester : `npm run validate`, puis selon le changement `npm run lint:scss` (mode SCSS), `npm run build`, `npm run list`, `npm run impact <nom>`.
-8. Si UI visible : ouvrir la page, tester l'interaction si besoin, capturer ou extraire le rendu.
+8. Si UI visible : `npm run snapshot -- <nom>` (ou `page:<nom>`), relire les captures, tester l'interaction si besoin.
 9. Pour une page ou un composant, passer la cible à `done` seulement si les vérifications attendues sont réussies, puis répondre avec : changements, impacts, validations, preuve visuelle si pertinente, risques/restes.
 
 ## Relecture visuelle obligatoire

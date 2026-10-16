@@ -394,6 +394,12 @@ Regles absolues :
 - classes selon le mode de style (section 5) : BEM en SCSS, tables d'utilitaires en Tailwind
 - pas de styles inline
 - accessibilite integree des la conception
+- HTML genere propre : les devs copient le HTML depuis le Showcase, il ne doit contenir ni ligne vide ni espaces parasites
+
+Controle des espaces (Twig supprime le saut de ligne qui suit une balise `{% %}`, pas l'indentation) :
+- terminer le dernier `{% set %}` de l'en-tete par `-%}`
+- coller chaque attribut conditionnel a la ligne precedente : `{%- if disabled %} disabled{% endif %}`
+- verifier le HTML dans le panneau `HTML genere` du Showcase ou avec `npm run snapshot`
 
 Exemple atom :
 
@@ -402,13 +408,10 @@ Exemple atom :
 {% set size     = size|default('md') %}
 {% set full     = full|default(false) %}
 {% set disabled = disabled|default(false) %}
-{% set text     = text|default('Cliquez ici') %}
+{% set text     = text|default('Cliquez ici') -%}
 
-<button
-  class="btn btn--{{ variant }} btn--{{ size }}{% if full %} btn--full{% endif %}"
-  type="button"
-  {% if disabled %}disabled aria-disabled="true"{% endif %}
->
+<button class="btn btn--{{ variant }} btn--{{ size }}{% if full %} btn--full{% endif %}" type="button"
+  {%- if disabled %} disabled{% endif %}>
   {{ text }}
 </button>
 ```
@@ -478,7 +481,12 @@ Regles communes aux deux modes :
 
 ## 6. Tokens disponibles
 
-Les tokens dependent du mode : variables SCSS dans `docs/styling-scss.md`, `@theme` Tailwind dans `docs/styling-tailwind.md`.
+Les tokens sont l'etape 1 : ils existent avant le premier composant (kit de depart dans `templates/`). Contrat complet dans `docs/design-tokens.md` :
+
+- variables CSS sur `:root`, memes noms dans les deux modes (`--color-*`, `--font-*`, `--text-*`, `--spacing-*`...)
+- deux couches : palette brute, puis roles (`--color-text`, `--color-primary`, `--color-on-primary`, `--color-success-text`...)
+- un composant n'utilise que les roles, jamais la palette ni une valeur hexadecimale
+- les paires de contraste des roles sont verifiees par `npm run health`
 
 ---
 
@@ -533,6 +541,11 @@ Tableaux, listes et contenus repetes :
 
 ## 8. Procedure complete - creer un composant
 
+### Etape 0 - Verifier les tokens
+
+- le point d'entree des styles et les tokens existent (`npm run health` ne signale rien en `TOKENS`)
+- sinon, poser d'abord le kit de depart du mode (`docs/styling-scss.md` ou `docs/styling-tailwind.md`) : pas d'atome sans tokens
+
 ### Etape 1 - Creer le dossier
 
 ```text
@@ -577,6 +590,7 @@ dev/components/[nom]/
 
 ### Etape 7 - Verifier
 
+- `npm run validate`, `npm run health`, `npm run snapshot -- [nom]` (captures mobile/desktop, focus clavier, Axe)
 - la cartographie et le rendu se régénèrent correctement
 - le composant apparait dans la liste
 - les controles JSON pilotent bien le rendu

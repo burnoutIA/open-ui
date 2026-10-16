@@ -1,31 +1,154 @@
-/* Point d'entrée Tailwind Open UI : à copier dans dev/assets/css/style.css */
+/* =============================================================================
+   Point d'entrée Tailwind Open UI : à copier dans dev/assets/css/style.css
+   Polices : copier templates/fonts/ dans dev/assets/fonts/.
+   ============================================================================= */
 @import "tailwindcss";
 
 /* Explicite : Tailwind ignore sinon les dossiers exclus par .gitignore. */
 @source "../../components";
 @source "../../pages";
 
-/* Tokens du projet, alignés sur le kit SCSS. Gris, espacements, rayons et typographie : échelles Tailwind par défaut. */
+/* Polices auto-hébergées, sous-ensemble latin */
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("../fonts/atkinson-hyperlegible-next-latin-wght-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  font-style: italic;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("../fonts/atkinson-hyperlegible-next-latin-wght-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("../fonts/bricolage-grotesque-latin-wght-normal.woff2") format("woff2");
+}
+
+/* Tokens : mêmes noms et mêmes valeurs que templates/scss/base/_tokens.scss.
+   La palette Tailwind par défaut est retirée : les composants n'utilisent que les rôles. */
 @theme {
-  --color-primary: #2563eb;
-  --color-primary-light: #60a5fa;
-  --color-primary-dark: #1d4ed8;
+  --color-*: initial;
 
-  --color-secondary: #7c3aed;
-  --color-secondary-light: #a78bfa;
-  --color-secondary-dark: #5b21b6;
+  /* 1. Palette */
+  --color-white: #ffffff;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-900: #111827;
+  --color-blue-50: #eff6ff;
+  --color-blue-600: #2563eb;
+  --color-blue-700: #1d4ed8;
+  --color-green-50: #f0fdf4;
+  --color-green-700: #15803d;
+  --color-amber-50: #fffbeb;
+  --color-amber-700: #b45309;
+  --color-red-50: #fef2f2;
+  --color-red-600: #dc2626;
+  --color-red-700: #b91c1c;
 
-  --color-success: #16a34a;
-  --color-success-light: #4ade80;
-  --color-success-dark: #15803d;
+  /* 2. Rôles */
+  --color-text: var(--color-gray-900);
+  --color-text-muted: var(--color-gray-600);
+  --color-surface: var(--color-white);
+  --color-surface-muted: var(--color-gray-100);
+  --color-surface-disabled: var(--color-gray-100);
+  --color-border: var(--color-gray-200);
+  --color-border-strong: var(--color-gray-500);
+  --color-primary: var(--color-blue-600);
+  --color-primary-hover: var(--color-blue-700);
+  --color-on-primary: var(--color-white);
+  --color-danger: var(--color-red-600);
+  --color-danger-hover: var(--color-red-700);
+  --color-on-danger: var(--color-white);
+  --color-link: var(--color-blue-600);
+  --color-link-hover: var(--color-blue-700);
+  --color-focus: var(--color-blue-600);
+  --color-info-text: var(--color-blue-700);
+  --color-info-surface: var(--color-blue-50);
+  --color-success-text: var(--color-green-700);
+  --color-success-surface: var(--color-green-50);
+  --color-warning-text: var(--color-amber-700);
+  --color-warning-surface: var(--color-amber-50);
+  --color-danger-text: var(--color-red-700);
+  --color-danger-surface: var(--color-red-50);
 
-  --color-danger: #dc2626;
-  --color-danger-light: #f87171;
-  --color-danger-dark: #b91c1c;
+  /* Typographie */
+  --font-heading: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, sfmono-regular, menlo, consolas, monospace;
 
-  --color-warning: #d97706;
-  --color-warning-light: #fbbf24;
-  --color-warning-dark: #b45309;
+  /* Espacements nommés (en plus de l'échelle numérique Tailwind) */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
 
-  --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Mise en page : max-w-page */
+  --container-page: 75rem;
+}
+
+/* Tokens hors thème Tailwind (pas d'utilitaire généré) */
+:root {
+  --gutter: var(--spacing-md);
+  --grid-gap: var(--spacing-md);
+
+  @media (width >= 48rem) {
+    --gutter: var(--spacing-lg);
+    --grid-gap: var(--spacing-lg);
+  }
+
+  @media (width >= 64rem) {
+    --gutter: var(--spacing-xl);
+  }
+}
+
+/* Conteneur de page : <div class="container-page"> ; grille : grid grid-cols-12 gap-(--grid-gap) */
+@utility container-page {
+  width: 100%;
+  max-width: calc(var(--container-page) + 2 * var(--gutter));
+  padding-inline: var(--gutter);
+  margin-inline: auto;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-body);
+    color: var(--color-text);
+    background-color: var(--color-surface);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    text-wrap: balance;
+  }
+
+  /* Preflight retire les puces partout, ce qui fait perdre la sémantique de liste dans Safari/VoiceOver :
+     les listes de contenu (sans classe) les retrouvent. */
+  ul:not([class]),
+  ol:not([class]) {
+    list-style: revert;
+    padding-inline-start: 1.5em;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
 }

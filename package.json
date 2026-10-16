@@ -15,6 +15,7 @@
     "health": "node scripts/health.js",
     "lint:scss": "stylelint \"dev/assets/scss/**/*.scss\" --allow-empty-input",
     "test:a11y": "node scripts/test-a11y.js",
+    "snapshot": "node scripts/snapshot.js",
     "test": "vitest run --passWithNoTests",
     "test:empty": "node scripts/test-empty-workspace.js",
     "test:watch": "vitest",
@@ -26,6 +27,7 @@
     "clean": "node scripts/clean-build.js"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/vite": "^4.0.0",
     "autoprefixer": "^10.4.0",
     "axe-core": "^4.10.0",

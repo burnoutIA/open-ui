@@ -5,7 +5,7 @@ import Twig from 'twig'
 import { SHOWCASE_API } from './showcase/shared/protocol.js'
 import { getShowcaseCatalog, getShowcaseEntry, normalizeShowcaseProps } from './showcase/server/catalog.js'
 import { readJsonBody, sendJson } from './showcase/server/http.js'
-import { createProjectStylesheetSource } from './showcase/server/project-style.js'
+import { EMPTY_PROJECT_STYLESHEET } from './showcase/server/project-style.js'
 import { validateHtmlWithW3c } from './showcase/server/html-validator.js'
 import { loadOpenUIConfig } from './scripts/openui-config.js'
 
@@ -144,14 +144,15 @@ function openUIPlugin() {
   return {
     name: 'openui',
 
+    // Le vrai fichier quand il existe : Vite y applique Sass ou Tailwind et résout les url() relatives
+    // (polices, images). Sinon, une feuille vide virtuelle pour un workspace qui démarre.
     resolveId(id) {
-      if (id === PROJECT_STYLESHEET_ID) return RESOLVED_PROJECT_STYLESHEET_ID
+      if (id !== PROJECT_STYLESHEET_ID) return
+      return fs.existsSync(PROJECT_STYLESHEET) ? PROJECT_STYLESHEET : RESOLVED_PROJECT_STYLESHEET_ID
     },
 
     load(id) {
-      if (id !== RESOLVED_PROJECT_STYLESHEET_ID) return
-      if (fs.existsSync(PROJECT_STYLESHEET)) this.addWatchFile(PROJECT_STYLESHEET)
-      return createProjectStylesheetSource(PROJECT_STYLESHEET, CONFIG.styling)
+      if (id === RESOLVED_PROJECT_STYLESHEET_ID) return EMPTY_PROJECT_STYLESHEET
     },
 
     // Build : rend chaque page Twig → HTML temporaire, passé à Rollup comme entrée
@@ -192,6 +193,20 @@ function openUIPlugin() {
 
     // Dev : rendu Twig à la volée + preview des esquisses hors DS canonique
     configureServer(server) {
+      // Création ou suppression du point d'entrée : les modules qui l'importent doivent le résoudre à nouveau.
+      const onStylesheetPresenceChange = (file) => {
+        if (path.resolve(file) !== PROJECT_STYLESHEET) return
+        for (const id of [RESOLVED_PROJECT_STYLESHEET_ID, PROJECT_STYLESHEET]) {
+          const module = server.moduleGraph.getModuleById(id)
+          if (!module) continue
+          for (const importer of module.importers) server.moduleGraph.invalidateModule(importer)
+          server.moduleGraph.invalidateModule(module)
+        }
+        server.ws.send({ type: 'full-reload' })
+      }
+      server.watcher.on('add', onStylesheetPresenceChange)
+      server.watcher.on('unlink', onStylesheetPresenceChange)
+
       server.middlewares.use(async (req, res, next) => {
         const pathname = new URL(req.url, 'http://localhost').pathname
 
@@ -320,8 +335,6 @@ function openUIPlugin() {
       if (isProjectContract || isSketch || isProjectStylesheet) {
         // En Tailwind, un Twig modifié peut introduire de nouvelles classes : la feuille doit être régénérée.
         if (isProjectStylesheet || (CONFIG.styling === 'tailwind' && isProjectContract)) {
-          const stylesheetModule = server.moduleGraph.getModuleById(RESOLVED_PROJECT_STYLESHEET_ID)
-          if (stylesheetModule) server.moduleGraph.invalidateModule(stylesheetModule)
           for (const module of server.moduleGraph.getModulesByFile(PROJECT_STYLESHEET) ?? []) {
             server.moduleGraph.invalidateModule(module)
           }

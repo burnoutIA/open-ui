@@ -2,34 +2,49 @@
 
 > A lire uniquement si `openui.config.json` declare `"styling": "tailwind"`.
 
+## Demarrer un projet
+
+Copier le kit de depart :
+
+```text
+templates/tailwind/style.css -> dev/assets/css/style.css
+templates/fonts/             -> dev/assets/fonts/
+```
+
 ## Fichiers
 
 ```text
-dev/assets/css/style.css   <- point d'entree (`styleEntry`) : import Tailwind, sources, tokens
+dev/assets/css/style.css   <- point d'entree (`styleEntry`) : import Tailwind, sources, polices, tokens, base
 ```
 
 Pas de feuille par composant : les styles vivent dans les classes utilitaires du Twig.
 
-Le kit de depart est `templates/tailwind/style.css` : le copier dans `dev/assets/css/style.css` au demarrage d'un projet.
-
-```css
-@import "tailwindcss";
-@source "../../components";
-@source "../../pages";
-
-@theme {
-  --color-primary: #2563eb;
-}
-```
-
-Les `@source` sont explicites : Tailwind ignore sinon les dossiers exclus par `.gitignore`.
+Les `@source "../../components"` et `"../../pages"` sont explicites : Tailwind ignore sinon les dossiers exclus par `.gitignore`.
 
 ## Tokens
 
-- Les tokens vivent dans `@theme` (`--color-*`, `--spacing-*`, `--radius-*`, `--font-*`...) et deviennent des utilitaires (`bg-primary`, `rounded-lg`...).
-- Utiliser un token plutot qu'une valeur arbitraire : `bg-primary` oui, `bg-[#2563eb]` non.
-- Une valeur arbitraire `[...]` repetee doit devenir un token.
-- Modifier `@theme` est un changement transversal : l'annoncer comme pour un token SCSS.
+Tokens et regles generales : `docs/design-tokens.md`. Memes noms qu'en mode SCSS, declares dans `@theme` :
+
+- la palette Tailwind par defaut est retiree (`--color-*: initial`) : seules la palette du projet et les roles existent ;
+- un composant utilise les roles : `bg-primary text-on-primary`, `text-text-muted`, `border-border-strong`, `bg-success-surface text-success-text` ;
+- espacements nommes `p-md`, `gap-sm` (ou l'echelle numerique Tailwind), polices `font-heading` / `font-body` ;
+- pas de valeur arbitraire si un token existe : `bg-primary` oui, `bg-[#2563eb]` non ; une valeur arbitraire repetee devient un token ;
+- modifier `@theme` est un changement transversal : l'annoncer et relancer `npm run health` (contrastes).
+
+## Mise en page
+
+```html
+<div class="container-page">
+  <div class="grid grid-cols-12 gap-(--grid-gap)">
+    <div class="col-span-12 md:col-span-8">Contenu</div>
+    <div class="col-span-12 md:col-span-4">Complement</div>
+  </div>
+</div>
+```
+
+- `container-page` : utilitaire du kit, largeur max `--container-page`, gouttieres `--gutter` responsives
+- grille : utilitaires Tailwind natifs, 12 colonnes, `col-span-12` par defaut puis `md:` / `lg:` pour elargir
+- la grille sert aux pages et aux organismes ; un atome ou une molecule ne place pas ses voisins
 
 ## Variantes d'un composant - regles
 
@@ -41,8 +56,8 @@ Tailwind ne genere que les classes ecrites en entier dans les sources. Chaque va
 {% set text    = text|default('Cliquez ici') %}
 
 {% set variants = {
-  primary: 'bg-primary text-white hover:bg-primary-dark',
-  secondary: 'bg-white text-gray-900 ring-1 ring-gray-300 hover:bg-gray-50'
+  primary: 'bg-primary text-on-primary hover:bg-primary-hover',
+  secondary: 'bg-surface text-text border border-border-strong hover:bg-surface-muted'
 } %}
 {% set sizes = {
   sm: 'px-3 py-1.5 text-sm',
@@ -51,7 +66,7 @@ Tailwind ne genere que les classes ecrites en entier dans les sources. Chaque va
 
 <button
   type="button"
-  class="inline-flex items-center rounded-md font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 {{ variants[variant] }} {{ sizes[size] }}"
+  class="inline-flex items-center rounded-md font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-50 {{ variants[variant] }} {{ sizes[size] }}"
 >
   {{ text }}
 </button>
@@ -77,13 +92,14 @@ Regles :
 
 | Erreur | Correct |
 |--------|---------|
-| `class="text-{{ tone }}"` | Table `{ info: 'text-blue-700', ... }` en tete du Twig |
-| `bg-[#2563eb]` | Token `@theme` puis `bg-primary` |
+| `class="text-{{ tone }}"` | Table `{ info: 'text-info-text bg-info-surface', ... }` en tete du Twig |
+| `bg-[#2563eb]` ou `bg-blue-600` | Role : `bg-primary` |
 | Prop `class` qui ajoute `p-2` sur un composant en `p-4` | Variante declaree dans le JSON |
-| `outline-none` seul | `focus-visible:outline-2 focus-visible:outline-primary` |
+| `outline-none` seul | `focus-visible:outline-2 focus-visible:outline-focus` |
 
 ## Verifications
 
 - `npm run lint:scss` ne s'applique pas
-- `npm run health` saute les controles SCSS
+- `npm run health` saute les controles SCSS et verifie les contrastes des roles de `@theme`
+- `npm run snapshot -- [nom]` : captures mobile/desktop, focus clavier et Axe
 - `npm run build`, puis verifier dans le Showcase chaque option de variante

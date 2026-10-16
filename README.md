@@ -34,6 +34,12 @@ npm.cmd run dev
 
 Cette solution ne demande aucune modification de la stratégie d’exécution PowerShell.
 
+Pour les captures `npm run snapshot` (vérification visuelle des agents), installer une fois le navigateur de Playwright, environ 120 Mo hors du projet :
+
+```bash
+npx playwright install chromium
+```
+
 ## Démarrage depuis un workspace vide
 
 Aucune commande d’initialisation n’est nécessaire. Le moteur du Showcase est livré et versionné dans `showcase/`.
@@ -44,17 +50,6 @@ Aucune commande d’initialisation n’est nécessaire. Le moteur du Showcase es
 - La feuille de styles du projet est facultative au départ. Le Showcase utilise une feuille vide tant qu’elle n’existe pas, puis charge automatiquement les styles du projet lorsqu’elle est créée.
 
 Un workspace sans composant n’est donc pas une erreur : le catalogue affiche `0` et guide la création du premier composant.
-
-## Ajouter un premier composant
-
-Chaque composant canonique vit dans son propre dossier :
-
-```text
-dev/components/button/
-|- button.json
-|- button.twig
-`- button.md
-```
 
 ## Choisir le mode de style
 
@@ -73,6 +68,28 @@ Le mode de style se choisit en début de projet dans `openui.config.json` :
 | `tailwind` | classes utilitaires dans `button.twig`, tokens dans `@theme` | `templates/tailwind/style.css` | [docs/styling-tailwind.md](./docs/styling-tailwind.md) |
 
 `styleEntry` est facultatif : par défaut `dev/assets/scss/style.scss` en SCSS et `dev/assets/css/style.css` en Tailwind. Relancer `npm run dev` après un changement de configuration.
+
+## Poser les tokens (étape 1)
+
+Avant le premier composant, copier le kit de départ du mode choisi : tokens, deux polices auto-hébergées, reset, typographie, conteneur et grille 12 colonnes responsive.
+
+| Mode | Copier |
+|---|---|
+| `scss` | `templates/scss/` → `dev/assets/scss/` et `templates/fonts/` → `dev/assets/fonts/` |
+| `tailwind` | `templates/tailwind/style.css` → `dev/assets/css/style.css` et `templates/fonts/` → `dev/assets/fonts/` |
+
+Les tokens sont des variables CSS en deux couches, une palette puis des rôles (`--color-primary`, `--color-on-primary`, `--color-success-text`…), avec les mêmes noms dans les deux modes. Les composants n'utilisent que les rôles. `npm run health` vérifie les contrastes entre rôles. Contrat complet : [docs/design-tokens.md](./docs/design-tokens.md).
+
+## Ajouter un premier composant
+
+Chaque composant canonique vit dans son propre dossier :
+
+```text
+dev/components/button/
+|- button.json
+|- button.twig
+`- button.md
+```
 
 Le JSON décrit les métadonnées, variantes et contenus modifiables. Le Showcase transforme ces déclarations en contrôles humains, rerend le Twig à chaque modification et maintient le HTML affiché à jour.
 
@@ -124,7 +141,8 @@ Le Showcase ne réécrit jamais les JSON : les modifications faites dans son for
 | `npm run dev` | Lance Vite, le Showcase et les mises à jour live |
 | `npm run build` | Génère le rendu dans `public/` |
 | `npm run validate` | Valide les contrats JSON et régénère l’index local |
-| `npm run health` | Contrôle la dette structurelle : nommage, fichiers, docs, imports de styles |
+| `npm run health` | Contrôle la dette structurelle : nommage, fichiers, docs, imports de styles, contrastes des tokens |
+| `npm run snapshot -- <composant>` | Capture chaque variante en mobile et desktop, le focus clavier, et lance Axe (Playwright) |
 | `npm run test` | Lance les tests automatisés |
 | `npm run test:empty` | Construit une copie temporaire sans `dev/` ni `public/` |
 | `npm run lint:scss` | Vérifie les sources SCSS présentes (mode SCSS) |

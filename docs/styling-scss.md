@@ -2,100 +2,110 @@
 
 > A lire uniquement si `openui.config.json` declare `"styling": "scss"` (ou si le fichier est absent : SCSS est le mode par defaut).
 
+## Demarrer un projet
+
+Copier le kit de depart :
+
+```text
+templates/scss/  -> dev/assets/scss/
+templates/fonts/ -> dev/assets/fonts/
+```
+
 ## Fichiers
 
 ```text
 dev/assets/scss/
-|- style.scss                 <- point d'entree (`styleEntry`)
-|- base/                      <- tokens, mixins, reset, typographie
-|- layout/                    <- primitives transverses (grille...)
-|- components/_[nom].scss     <- un fichier par composant
+|- style.scss                  <- point d'entree (`styleEntry`)
+|- base/_tokens.scss           <- tous les tokens, en variables CSS sur :root
+|- base/_breakpoints.scss      <- paliers responsive (seule valeur restee en Sass)
+|- base/_mixins.scss           <- focus-ring, visually-hidden, truncate, respond-to
+|- base/_fonts.scss            <- @font-face des polices auto-hebergees
+|- base/_reset.scss, _typography.scss
+|- layout/_container.scss      <- conteneur de page et gouttieres
+|- layout/_grid.scss           <- grille 12 colonnes
+|- components/_[nom].scss      <- un fichier par composant
 `- components/_[nom]-page.scss <- styles propres a une page
 ```
 
-Le point d'entree est configurable via `styleEntry` ; les dossiers `components/`, `base/` et `layout/` sont relatifs a son dossier.
+Le point d'entree est configurable via `styleEntry` ; les dossiers `base/`, `layout/` et `components/` sont relatifs a son dossier.
 
-Le kit de depart vit dans `templates/scss/` : copier `base/` et `layout/` dans `dev/assets/scss/` au demarrage d'un projet.
+Les `url()` (polices, images) ecrites dans un partiel sont relatives au point d'entree `style.scss`, pas au partiel : Sass ne les reecrit pas.
+
+## Tokens
+
+Tokens et regles generales : `docs/design-tokens.md`. En SCSS, les composants lisent les roles avec `var()` :
+
+```scss
+.btn--primary {
+  color: var(--color-on-primary);
+  background-color: var(--color-primary);
+}
+```
+
+- jamais de couleur de palette (`--color-blue-600`) ni de valeur hexadecimale dans un composant
+- espacements `var(--spacing-*)`, tailles de texte `var(--text-*)`, rayons `var(--radius-*)`, durees `var(--duration-*)`
+- les points de rupture passent par le mixin `respond-to('sm' | 'md' | 'lg' | 'xl')`
 
 ## SCSS d'un composant - regles
 
 ```scss
-@use '../base/variables' as *;
 @use '../base/mixins' as *;
 
 .btn {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+
   &--primary { /* variante */ }
   &--sm { /* taille */ }
-  &--full { width: 100%; }
 
   &:focus-visible {
     @include focus-ring;
   }
 
-  &:disabled,
-  &[aria-disabled="true"] {
-    opacity: 0.5;
+  &:disabled {
     cursor: not-allowed;
+    opacity: 0.5;
   }
+
+  @include respond-to('md') { /* elargissement */ }
 }
 ```
 
 Regles :
-- `@use '../base/variables' as *;` en tete de chaque fichier composant
-- variables design system obligatoires, zero valeur hardcodee si un token existe
-- pas de `!important`
+- `@use '../base/mixins' as *;` seulement si le fichier utilise un mixin
+- pas de `!important` ; seule exception : le bloc `prefers-reduced-motion` du reset
 - pas de selecteurs HTML nus dans les composants (`.btn` oui, `button` non)
 - classes BEM strictes : `.block__element--modifier` ; le Twig applique les classes de variante
-- mobile first avec `@include respond-to('md')`
+- mobile first : styles de base pour le mobile, `respond-to` pour elargir
 - import manuel dans `style.scss` :
 
 ```scss
 @use 'components/[nom]';
 ```
 
-## Variables SCSS disponibles (kit de depart)
+## Mise en page
 
-### Couleurs
-```scss
-$color-primary / $color-primary-light / $color-primary-dark
-$color-secondary / $color-secondary-light / $color-secondary-dark
-$color-success / $color-success-light / $color-success-dark
-$color-danger / $color-danger-light / $color-danger-dark
-$color-warning / $color-warning-light / $color-warning-dark
-$color-gray-50 ... $color-gray-900
-$color-white / $color-black
+```html
+<div class="container">
+  <div class="grid">
+    <div class="grid__item grid__item--md-span-8">Contenu</div>
+    <div class="grid__item grid__item--md-span-4">Complement</div>
+  </div>
+</div>
 ```
 
-### Typographie
-```scss
-$font-size-xs / sm / base / lg / xl / 2xl / 3xl / 4xl
-$font-weight-normal / medium / semibold / bold
-$line-height-tight / normal / relaxed
-$font-family-base / $font-family-mono
-```
+- `.container` : largeur max `--container-page`, gouttieres `--gutter` qui grandissent avec l'ecran
+- `.grid` : 12 colonnes, espacement `--grid-gap` ; `.grid--gap-{none|sm|md|lg|xl}`, `.grid--align-*`
+- `.grid__item` : 12 colonnes par defaut (empile sur mobile) ; `--span-{n}`, `--{sm|md|lg|xl}-span-{n}`, `--{md|lg}-start-{n}`
+- la grille sert aux pages et aux organismes ; un atome ou une molecule ne place pas ses voisins
 
-### Espacements
-```scss
-$spacing-xs / sm / md / lg / xl / 2xl / 3xl
-```
+## Mixins
 
-### Autres
-```scss
-$radius-sm / md / lg / xl / 2xl / full
-$shadow-sm / md / lg / xl
-$transition-fast / base / slow
-$breakpoint-sm / md / lg / xl / 2xl
-$z-dropdown / sticky / fixed / modal-backdrop / modal / popover / tooltip
-```
-
-### Mixins
 ```scss
 @include respond-to('md')
-@include flex-center
-@include flex-between
-@include truncate
-@include visually-hidden
 @include focus-ring
+@include visually-hidden
+@include truncate
 ```
 
 ## Conventions de nommage
@@ -104,18 +114,21 @@ $z-dropdown / sticky / fixed / modal-backdrop / modal / popover / tooltip
 |---------|-----------|---------|
 | Fichier SCSS | `_kebab-case.scss` | `_form-field.scss` |
 | Classes CSS | BEM `.block__element--modifier` | `.btn--primary` |
-| Variables SCSS | `$categorie-nom` | `$color-primary`, `$spacing-md` |
+| Tokens | variables CSS `--categorie-nom` | `--color-primary`, `--spacing-md` |
 
 ## Erreurs frequentes
 
 | Erreur | Correct |
 |--------|---------|
+| `color: #2563eb` ou `var(--color-blue-600)` dans un composant | `var(--color-primary)` |
 | Import SCSS auto-genere | Import manuel dans `style.scss` |
-| `outline: none` sans alternative | Utiliser `@include focus-ring` |
+| `outline: none` sans alternative | `@include focus-ring` |
+| `url('../../fonts/…')` relative au partiel | `url('../fonts/…')` relative a `style.scss` |
 | Style de page dans `components/_[nom].scss` | `components/_[nom]-page.scss`, ou `layout/` pour une primitive transverse |
 
 ## Verifications
 
 - `npm run lint:scss`
-- `npm run health` : signale SCSS composant absent et import manquant dans `style.scss`
+- `npm run health` : SCSS composant absent, import manquant dans `style.scss`, contrastes des tokens
+- `npm run snapshot -- [nom]` : captures mobile/desktop, focus clavier et Axe
 - `npm run build`

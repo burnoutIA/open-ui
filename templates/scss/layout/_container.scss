@@ -1,0 +1,32 @@
+// =============================================================================
+// Conteneur — largeur de lecture et gouttières latérales
+// =============================================================================
+//
+//   <div class="container">…</div>          largeur max --container-page, centré
+//   <div class="container container--full">  pleine largeur, gouttières conservées
+//
+// Les gouttières grandissent avec l'écran ; la page pilote le placement global, pas les composants.
+
+@use '../base/mixins' as *;
+
+:root {
+  @include respond-to('md') {
+    --gutter: var(--spacing-lg);
+    --grid-gap: var(--spacing-lg);
+  }
+
+  @include respond-to('lg') {
+    --gutter: var(--spacing-xl);
+  }
+}
+
+.container {
+  width: 100%;
+  max-width: calc(var(--container-page) + 2 * var(--gutter));
+  padding-inline: var(--gutter);
+  margin-inline: auto;
+
+  &--full {
+    max-width: none;
+  }
+}

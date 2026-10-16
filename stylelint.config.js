@@ -3,6 +3,7 @@ export default {
   rules: {
     'alpha-value-notation': null,
     'color-hex-length': null,
+    'custom-property-empty-line-before': null,
     'declaration-block-no-redundant-longhand-properties': null,
     'declaration-block-single-line-max-declarations': null,
     'declaration-empty-line-before': null,

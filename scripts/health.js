@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { collectRefs, collectTwigIncludes, getComponentEntries, getPageEntries, OPENUI_CONFIG } from './design-system.js'
+import { checkTokenContrast } from './tokens-contrast.js'
 
 const checks = []
 const components = getComponentEntries()
@@ -137,6 +138,21 @@ function checkPage(page) {
 
 // Un workspace vide est valide : le point d'entrée SCSS ne devient obligatoire qu'avec du contenu.
 if ((components.length || pages.length) && !fs.existsSync(stylePath)) add('error', 'styles', stylePath, 'Point d’entrée des styles absent')
+// Tokens : _tokens.scss à côté du point d'entrée en SCSS, bloc @theme du point d'entrée en Tailwind.
+function checkTokens() {
+  const tokensPath = OPENUI_CONFIG.styling === 'scss'
+    ? path.join(path.dirname(stylePath), 'base/_tokens.scss')
+    : stylePath
+  if (!fs.existsSync(tokensPath)) return
+
+  for (const pair of checkTokenContrast(fs.readFileSync(tokensPath, 'utf8'))) {
+    const label = `${pair.fg} sur ${pair.bg} (${pair.usage})`
+    if (pair.skipped) add('warn', 'tokens', tokensPath, `Paire de contraste non vérifiable : ${label}`, 'rôle absent ou valeur non hexadécimale')
+    else if (!pair.ok) add('error', 'tokens', tokensPath, `Contraste insuffisant : ${label}`, `${pair.ratio.toFixed(2)}:1, minimum ${pair.min}:1`)
+  }
+}
+
+checkTokens()
 for (const component of components) checkComponent(component)
 for (const page of pages) checkPage(page)
 
