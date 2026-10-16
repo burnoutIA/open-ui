@@ -63,7 +63,7 @@ async function startServer() {
   return { url: server.resolvedUrls.local[0].replace(/\/$/, ''), close: () => server.close() }
 }
 
-async function render(baseUrl, entryType, entryId, props) {
+export async function render(baseUrl, entryType, entryId, props) {
   const response = await fetch(baseUrl + SHOWCASE_API.render, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -78,7 +78,7 @@ function escapeHtml(value) {
   return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 }
 
-async function runAxe(page, selector) {
+export async function runAxe(page, selector) {
   if (!(await page.evaluate(() => Boolean(window.axe)))) {
     await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') })
   }

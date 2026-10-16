@@ -125,7 +125,7 @@ Si le service Nu est indisponible, le Showcase affiche un contrôle HTML partiel
 Ce dépôt produit l'outil : `dev/` y est ignoré pour ne pas livrer nos composants de test. Pour éprouver l'outil sur du vrai contenu, la branche `workspace` versionne un `dev/` peuplé (tokens, composants, gabarit, page).
 
 - **Ne jamais fusionner `workspace` dans `develop` ni dans `main`.** Le sens est toujours `develop` → `workspace`.
-- Tester une évolution de l'outil : `git checkout workspace && git merge develop`, puis `npm run dev`, `npm test`, `npm run snapshot -- <nom>`.
+- Tester une évolution de l'outil : `git checkout workspace && git merge develop`, puis `npm test` et `npm run test:e2e`. La CI GitHub lance tout sur `develop`, `main` et `workspace`.
 - Revenir sur `develop` retire `dev/` du dossier de travail : c'est normal, il n'existe que sur `workspace`.
 - Pour garder les deux côte à côte : `git worktree add ../open-ui-workspace workspace`.
 
@@ -155,6 +155,7 @@ Le Showcase ne réécrit jamais les JSON : les modifications faites dans son for
 | `npm run snapshot -- <composant>` | Capture chaque variante en mobile et desktop, le focus clavier, et lance Axe (Playwright) |
 | `npm run test` | Lance les tests automatisés |
 | `npm run test:empty` | Construit une copie temporaire sans `dev/` ni `public/` |
+| `npm run test:e2e` | Test de bout en bout (Playwright) : chaque composant et page, dans chaque cas, passe Axe et s'ouvre proprement dans le Showcase |
 | `npm run lint:scss` | Vérifie les sources SCSS présentes (mode SCSS) |
 | `npm run graph` | Régénère `.openui/graph.json` |
 | `npm run graph:check` | Vérifie que l’index correspond aux sources |

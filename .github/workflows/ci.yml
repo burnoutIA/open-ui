@@ -1,0 +1,38 @@
+# Contrôles de l'outil. Sur develop et main, dev/ est vide : on vérifie le workspace de démarrage.
+# Sur workspace, dev/ est peuplé : le test de bout en bout couvre chaque composant et chaque page.
+name: CI
+
+on:
+  push:
+    branches: [develop, main, workspace]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run lint:scss
+      - run: npm run validate
+      - run: npm run health
+      - run: npm run skills:check -- --target codex
+      - run: npm run test:empty
+      - run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e

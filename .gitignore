@@ -12,3 +12,5 @@ dev/*
 .claude/*
 .skill-harness/claude.lock.json
 .openui/snapshots/
+test-results/
+playwright-report/
