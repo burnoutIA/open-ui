@@ -1,0 +1,82 @@
+.preview-document {
+  min-width: 20rem;
+  min-height: 100vh;
+  margin: 0;
+  background: #f8f7f3;
+}
+
+.preview-stage {
+  display: grid;
+  min-height: 100vh;
+  padding: clamp(1rem, 5vw, 3rem);
+  place-items: center;
+  transition: background-color 150ms ease;
+}
+
+.preview-document[data-entry-type="page"] .preview-stage {
+  display: block;
+  padding: 0;
+}
+
+.preview-document[data-background="grid"] .preview-stage {
+  background-color: #f8f7f3;
+  background-image:
+    linear-gradient(#d9ddd8 1px, transparent 1px),
+    linear-gradient(90deg, #d9ddd8 1px, transparent 1px);
+  background-size: 1.5rem 1.5rem;
+}
+
+.preview-document[data-background="dark"] .preview-stage {
+  background: #17201f;
+}
+
+.preview-mount {
+  width: 100%;
+  min-width: 0;
+}
+
+.page-preview {
+  display: block;
+  width: 100%;
+  min-height: 45rem;
+  border: 0;
+  background: #fff;
+}
+
+.page-preview[hidden] {
+  display: none;
+}
+
+.preview-mount[data-level="atom"] {
+  width: min(100%, 22rem);
+}
+
+.preview-mount[data-level="molecule"] {
+  width: min(100%, 44rem);
+}
+
+.preview-mount[data-level="organism"],
+.preview-mount[data-level="template"] {
+  width: 100%;
+}
+
+.preview-placeholder {
+  max-width: 28rem;
+  margin: 0;
+  color: #5c6865;
+  font-family: Aptos, "Segoe UI", system-ui, sans-serif;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.preview-error {
+  width: min(100%, 40rem);
+  padding: 1rem;
+  color: #781c14;
+  background: #fde7e3;
+  border: 1px solid #b42318;
+  border-inline-start-width: 0.25rem;
+  font-family: Aptos, "Segoe UI", system-ui, sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}

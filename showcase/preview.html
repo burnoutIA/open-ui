@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Preview Open UI</title>
+  <link rel="stylesheet" href="./src/preview.css">
+</head>
+<body class="preview-document" data-background="light">
+  <main class="preview-stage" id="preview-stage">
+    <p class="preview-placeholder" id="preview-placeholder">Sélectionnez un composant ou une page dans le Showcase.</p>
+    <div class="preview-mount" id="preview-root" aria-busy="false"></div>
+    <iframe
+      class="page-preview"
+      id="page-preview"
+      title="Prévisualisation de la page sélectionnée"
+      hidden
+    ></iframe>
+    <div class="preview-error" id="preview-error" role="alert" hidden></div>
+  </main>
+
+  <script type="module" src="./src/preview.js"></script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Figma vers Open UI"
+  short_description: "Analyser puis integrer une maquette Figma"
+  default_prompt: "Utilise $figma-to-open-ui pour analyser cette maquette Figma avant toute integration."

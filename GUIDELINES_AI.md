@@ -48,6 +48,9 @@ Structure imposee pour `[nom].md` :
 ## Accessibilite
 [Attributs ARIA, comportement clavier, points d'attention.]
 
+## Responsive
+[Ajouter cette section si le composant a une reorganisation, une contrainte de contenu ou un comportement responsive non evident.]
+
 ## Exemples
 
 ### Exemple de base
@@ -82,6 +85,7 @@ Exemple minimal valide :
 ```json
 {
   "name": "Button",
+  "status": "in-progress",
   "level": "atom",
   "category": "Forms",
   "description": "Element d'action interactif.",
@@ -110,6 +114,12 @@ Champs obligatoires :
 - `level` pour les composants dans `dev/components/`
 - `category`
 - `description`
+
+Statut de travail :
+- `status` accepte `todo`, `in-progress` ou `done`
+- l'absence de `status` vaut `done` pour compatibilite
+- declarer `in-progress` des le debut d'une creation ou refonte, puis `done` seulement apres validation, verification visuelle, responsive et accessibilite pertinentes
+- `.openui/graph.json` agrege les statuts et les relations ; ne pas l'editer a la main
 
 Types de controles disponibles :
 - `select` -> `{ type, label, default, options: [] }`
@@ -469,6 +479,16 @@ Regles :
 - mobile first
 - import manuel dans `style.scss`
 
+### Contrat responsive
+
+- concevoir mobile first et utiliser les breakpoints/tokens existants avant d'introduire une rupture locale
+- garder un ordre DOM coherent avec l'ordre de lecture et le parcours clavier, meme si la disposition visuelle change
+- ne pas masquer un contenu ou une action essentielle pour faire tenir une composition
+- eviter tout scroll horizontal global a largeur reduite ou au zoom, sauf contenu reellement bidimensionnel et documente
+- permettre aux textes longs, aides, erreurs, libelles et contenus traduits de se replier sans chevauchement ni troncature destructive
+- laisser la page piloter le placement global ; un composant ne doit gerer que son adaptation interne
+- documenter dans `[nom].md` toute reorganisation, limite de contenu ou contrainte responsive non evidente
+
 ---
 
 ## 6. Variables SCSS disponibles
@@ -518,30 +538,52 @@ $z-dropdown / sticky / fixed / modal-backdrop / modal / popover / tooltip
 
 ---
 
-## 7. Accessibilite - regles par type
+## 7. Accessibilite - contrat par type
 
-Tous les composants :
-- `focus-visible` stylise
-- pas de `outline: none` sans alternative visible
-- contrastes WCAG AA minimum
+Principes communs :
+- preferer un element HTML natif adapte avant d'ajouter ARIA
+- produire un HTML valide et semantique pour l'usage reel
+- donner un nom accessible explicite a tout element interactif
+- garantir un focus visible, un ordre de focus logique et une utilisation clavier equivalente a la souris
+- ne jamais transmettre une information uniquement par la couleur, la forme, la taille ou la position
+- conserver des contrastes suffisants pour les textes, les etats et l'indicateur de focus
+- documenter dans `[nom].md` ce que le composant garantit et ce que son consommateur doit fournir
+- ne jamais annoncer une conformite RGAA sur la seule base d'Axe, du validateur HTML ou d'une revue agentique
 
-Boutons :
-- `type="button"` explicite
-- `disabled` + `aria-disabled="true"` si desactive
+Boutons, liens et controles :
+- utiliser `button` pour une action et `a[href]` pour une navigation
+- definir `type="button"` pour un bouton qui ne soumet pas un formulaire
+- utiliser l'attribut natif `disabled` quand l'element le supporte ; reserver `aria-disabled` aux patterns qui ne peuvent pas etre desactives nativement et neutraliser alors toutes les activations
+- exposer les etats utiles (`aria-expanded`, `aria-pressed`, `aria-current`, `aria-selected`) seulement lorsque le pattern les exige
+- documenter les touches, le focus initial et le retour de focus des composants interactifs complexes
 
 Formulaires :
-- `<label>` associe via `for` + `id`
-- `aria-invalid="true"` si erreur
-- `aria-describedby` si message d'erreur
-- `role="alert"` sur les messages critiques
+- associer chaque champ a un `<label>` visible via `for` + `id` quand le controle le permet
+- ne pas utiliser le placeholder comme remplacement du label
+- regrouper les radios ou cases liees avec `fieldset` et `legend`
+- relier aides et erreurs avec `aria-describedby` et exposer `aria-invalid="true"` sur un champ invalide
+- rendre les erreurs visibles, explicites et annoncables sans appliquer automatiquement `role="alert"` a tout message
+- garder des identifiants uniques dans la page et documenter le comportement de focus apres validation
 
-Images :
-- `alt` descriptif obligatoire
-- `alt=""` si decorative
+Images, icones et medias :
+- fournir un `alt` pertinent pour une image informative et `alt=""` pour une image decorative
+- masquer aux technologies d'assistance une icone decorative redondante avec un texte voisin
+- donner un nom accessible a un bouton icone seul
+- ne pas inventer une alternative editoriale quand son sens depend du contexte : documenter l'obligation du consommateur
+- documenter les besoins de sous-titres, transcription, audiodescription ou fallback quand un media est accepte
 
-Navigation :
-- `aria-label` sur les `<nav>` ambigus
-- ordre de focus logique
+Navigation et structure de page :
+- definir la langue et un titre explicite sur chaque document complet
+- exposer un contenu principal, une hierarchie de titres logique et des landmarks coherents
+- nommer uniquement les regions de navigation ambigues ou multiples
+- ajouter un lien d'evitement quand une navigation repetee precede le contenu principal
+- garder l'ordre DOM coherent avec l'ordre visuel, la lecture et le clavier sur toutes les largeurs
+
+Tableaux, listes et contenus repetes :
+- utiliser `table`, `th` et les associations necessaires pour de vraies donnees tabulaires
+- utiliser une liste semantique pour un contenu reellement listable
+- contextualiser le nom accessible des actions repetees par ligne ou par carte
+- ne laisser aucun contenu essentiel disponible uniquement au survol
 
 ---
 

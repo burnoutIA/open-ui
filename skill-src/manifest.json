@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "skills": [
+    {
+      "name": "design-critique"
+    },
+    {
+      "name": "design-memory"
+    },
+    {
+      "name": "design-sketching"
+    },
+    {
+      "name": "figma-to-open-ui",
+      "interface": {
+        "displayName": "Figma vers Open UI",
+        "shortDescription": "Analyser puis integrer une maquette Figma",
+        "defaultPrompt": "Utilise $figma-to-open-ui pour analyser cette maquette Figma avant toute integration."
+      }
+    },
+    {
+      "name": "open-ui"
+    },
+    {
+      "name": "rgaa"
+    },
+    {
+      "name": "sketch-to-production"
+    }
+  ],
+  "commandSkillEntrypoints": [
+    "open-ui-analyze-figma",
+    "open-ui-implement-figma",
+    "open-ui-sketch",
+    "open-ui-consolidate-sketch",
+    "open-ui-check"
+  ],
+  "commandGroups": [
+    {
+      "hostSkill": "open-ui",
+      "commands": [
+        "open-ui-map",
+        "open-ui-impact",
+        "open-ui-modify",
+        "open-ui-create-component",
+        "open-ui-analyze-figma",
+        "open-ui-implement-figma",
+        "open-ui-sketch",
+        "open-ui-consolidate-sketch",
+        "open-ui-check",
+        "open-ui-review",
+        "open-ui-rgaa-check",
+        "open-ui-cleanup",
+        "open-ui-docs",
+        "open-ui-critic"
+      ]
+    },
+    {
+      "hostSkill": "rgaa",
+      "commands": [
+        "rgaa-check-component",
+        "rgaa-check-page",
+        "rgaa-review",
+        "rgaa-map-criteria"
+      ]
+    }
+  ]
+}

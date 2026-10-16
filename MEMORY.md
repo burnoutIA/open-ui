@@ -9,7 +9,7 @@ Ne pas créer un deuxième fichier de direction design sans demande explicite. P
 - **Direction stabilisée** : règles et décisions à appliquer au futur travail.
 - **Entrées de provenance** : retours concrets, exemples fondateurs et vigilances qui expliquent d'où viennent les règles.
 
-Les skills dans `.marius/skills/` gardent uniquement les règles de comportement réutilisables par l'agent.
+Les skills locaux gardent uniquement les règles de comportement réutilisables par l'agent ; leur format d'installation peut varier selon la plateforme.
 
 Après une demande réalisée puis critiquée par l'utilisateur :
 
@@ -40,6 +40,8 @@ Open UI explore un framework agentique de design/dev UI : l'agent peut concevoir
 - Design system protected : les composants, tokens et conventions partagés restent protégés par défaut.
 - Critique loop : les retours utilisateur doivent devenir des règles utiles, pas un journal infini.
 - Visual ambition with control : le mode sketch doit chercher du caractère sans perdre lisibilité, accessibilité et faisabilité.
+- Frontière source/rendu : `dev/` contient les sources du projet, y compris `dev/sketches/` pour les esquisses ; `public/` contient le rendu généré, ignoré pendant le développement courant mais conservable pour la production. `public/` n'est jamais la source de vérité.
+- Frontière des skills : `skill-src/` est l'unique source éditable ; les dossiers propres à Codex, Copilot, Claude, OpenCode et Pi sont générés uniquement pour la cible demandée et ne doivent pas diverger manuellement.
 - Design d'attention pour outils critiques : pour une app médicale ou experte de suivi quotidien, guider le regard vers qui regarder maintenant, pourquoi c'est important, quelle décision prendre et ce qui peut attendre, plutôt qu'exposer tous les modules avec le même poids.
 
 ### Langage visuel
@@ -58,6 +60,8 @@ Open UI explore un framework agentique de design/dev UI : l'agent peut concevoir
 - Recherche / commande : piste pertinente pour les usages agentiques et experts.
 - Sélection : visible, réversible et proche de l'objet manipulé.
 - Édition : contextualisée, avec états clairs.
+- Édition structurée : dans les outils destinés aux humains, traduire les tableaux et objets en champs nommés et contrôles répétables ; réserver le JSON brut au diagnostic ou aux formes impossibles à déduire.
+- Handoff développeur : un outil de design system doit exposer le HTML réellement généré par l'état live, le rendre sélectionnable et copiable, et bloquer la copie tant que le rendu est périmé ou en erreur.
 - Feedback : explicite pour loading, erreur, succès, brouillon, statut expérimental.
 - États IA : rendre visibles attente, confiance, provenance et action suivante quand applicable.
 - États vides / erreur / loading : à prévoir tôt, même en sketch.
@@ -84,7 +88,6 @@ Open UI explore un framework agentique de design/dev UI : l'agent peut concevoir
 
 ### Questions ouvertes
 
-- Où stocker durablement les esquisses ?
 - Quel statut utiliser dans les données : `draft`, `sketch`, `canonical` ?
 - Comment promouvoir une esquisse sans laisser de dette ou de composants morts ?
 - Faut-il inclure les esquisses dans les commandes de listing ?

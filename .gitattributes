@@ -1,0 +1,12 @@
+skill-src/** text=auto eol=lf
+.agents/skills/** text=auto eol=lf
+.github/skills/** text=auto eol=lf
+.claude/skills/** text=auto eol=lf
+.opencode/skills/** text=auto eol=lf
+.opencode/commands/** text=auto eol=lf
+.pi/skills/** text=auto eol=lf
+.pi/prompts/** text=auto eol=lf
+.skill-harness/** text=auto eol=lf
+scripts/skill-harness.js text eol=lf
+scripts/skill-harness.test.js text eol=lf
+scripts/skill-harness/** text=auto eol=lf

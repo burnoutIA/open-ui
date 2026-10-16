@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.DS_Store
+.env
+.env.*
+!.env.example
+.openui-empty-*/
+.agents/
+docs/
+scripts/
+showcase/
+skill-src/
+GUIDELINES_AI.md
+.node_modules
+image.png
+MEMORY.md
+openui.config.json

@@ -10,6 +10,7 @@ L'objectif n'est pas seulement de trouver les fichiers touches, mais de comprend
 
 Avant modification, l'agent doit :
 
+- lire d'abord `.openui/graph.json` pour cibler les fichiers utiles ; le régénérer s'il est absent ou périmé ;
 - identifier le composant, la page ou le token cible ;
 - lister les composants qui dependent de cette cible ;
 - lister les pages qui utilisent directement ou indirectement cette cible ;
@@ -31,6 +32,10 @@ Apres modification, l'agent doit :
 - `system` : changement de pattern, convention ou structure.
 - `token` : changement de variable design pouvant affecter toute l'UI.
 
+## Index d'impact
+
+L'index persistant vit dans `.openui/graph.json`. Il contient les relations directes composant-vers-composant et les usages de pages calculés transitivement. La commande `impact` parcourt aussi les parents sur plusieurs niveaux. Les commandes `list` et `impact` remettent l'index à jour avant lecture. CodeGraph n'est pas une dépendance de ce contrat : un graphe de symboles généraliste ne remplace pas les relations métier déclarées dans les JSON Open UI.
+
 ## Sortie attendue pour l'utilisateur
 
 ```text
@@ -44,8 +49,6 @@ Risque: changement visuel transversal sur les CTA
 
 ## Questions a resoudre
 
-- Comment calculer les impacts indirects sur plusieurs niveaux de composition ?
 - Comment relier les tokens SCSS aux composants qui les utilisent ?
 - Comment detecter automatiquement les impacts visuels importants ?
-- Faut-il stocker un index persistant ou recalculer a chaque commande ?
 - Comment gerer les impacts entre plusieurs projets Open UI ?

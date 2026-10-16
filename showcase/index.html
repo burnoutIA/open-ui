@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Showcase interactif du design system Open UI.">
+  <title>Open UI Showcase</title>
+  <link rel="stylesheet" href="./src/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#showcase-main">Aller à la prévisualisation</a>
+
+  <header class="topbar">
+    <a class="topbar__brand" href="../" aria-label="Retour à l’index Open UI">
+      <span aria-hidden="true">O/</span>
+      <span>Open UI</span>
+    </a>
+    <div class="topbar__title">
+      <p>Design system</p>
+      <h1>Showcase</h1>
+    </div>
+    <p class="topbar__status" id="catalog-status" role="status">Connexion au workspace…</p>
+  </header>
+
+  <div class="workspace">
+    <nav class="catalog" aria-labelledby="catalog-title">
+      <div class="catalog__header">
+        <div>
+          <p class="section-kicker">Bibliothèque</p>
+          <h2 id="catalog-title">Composants et pages</h2>
+        </div>
+        <p class="catalog__count" id="catalog-count">0</p>
+      </div>
+
+      <div class="catalog__search">
+        <label class="visually-hidden" for="component-search">Rechercher un composant ou une page</label>
+        <input id="component-search" type="search" placeholder="Rechercher…" autocomplete="off" disabled>
+      </div>
+
+      <div class="catalog__list" id="component-list"></div>
+    </nav>
+
+    <main class="canvas" id="showcase-main" tabindex="-1">
+      <header class="canvas__toolbar">
+        <div class="canvas__identity">
+          <p class="canvas__meta" id="component-meta">Sélectionnez un composant ou une page</p>
+          <h2 id="component-title">Prévisualisation</h2>
+          <p class="canvas__description" id="component-description">Le rendu sera isolé dans une iframe et piloté par son contrat JSON.</p>
+          <div class="quality-badges" aria-label="État des contrôles du rendu">
+            <span class="quality-badge" id="w3c-badge" data-status="idle">HTML · non testé</span>
+            <span class="quality-badge" id="axe-badge" data-status="idle">Axe · non testé</span>
+            <span class="quality-badge" data-status="manual">RGAA · manuel</span>
+          </div>
+        </div>
+
+        <div class="canvas__tools">
+          <div class="quality-action">
+            <span>Qualité</span>
+            <button id="run-quality" type="button" aria-describedby="quality-privacy" disabled>Contrôler le rendu</button>
+          </div>
+
+          <fieldset class="viewport-picker" disabled>
+            <legend>Largeur du canvas</legend>
+            <label><input type="radio" name="viewport" value="auto" checked><span>Auto</span></label>
+            <label><input type="radio" name="viewport" value="375"><span>Mobile</span></label>
+            <label><input type="radio" name="viewport" value="768"><span>Tablette</span></label>
+            <label><input type="radio" name="viewport" value="1200"><span>Desktop</span></label>
+          </fieldset>
+
+          <div class="background-picker">
+            <label for="preview-background">Fond</label>
+            <select id="preview-background" disabled>
+              <option value="light">Clair</option>
+              <option value="grid">Grille</option>
+              <option value="dark">Sombre</option>
+            </select>
+          </div>
+        </div>
+      </header>
+
+      <div class="canvas__surface" id="canvas-surface">
+        <section class="workspace-empty" id="workspace-empty" aria-labelledby="workspace-empty-title">
+          <p class="section-kicker">Workspace prêt</p>
+          <h3 id="workspace-empty-title">Commencez par votre premier composant ou votre première page.</h3>
+          <p id="workspace-empty-description">Le Showcase fonctionne déjà. Ajoutez ensuite un contrat JSON et son template Twig.</p>
+          <code>dev/components/[nom]/ ou dev/pages/[nom].*</code>
+        </section>
+
+        <div class="preview-shell" id="preview-shell" hidden>
+          <iframe
+            id="preview-frame"
+            title="Prévisualisation de l'entrée sélectionnée"
+            src="./preview.html"
+          ></iframe>
+        </div>
+      </div>
+
+      <details class="html-output">
+        <summary>
+          <span id="html-output-title">HTML généré</span>
+          <span class="html-output__status" id="html-output-status">En attente du rendu</span>
+        </summary>
+        <div class="html-output__content">
+          <div class="html-output__toolbar">
+            <p>Code produit par le rendu Twig courant.</p>
+            <div class="html-output__copy">
+              <p id="copy-html-status" role="status"></p>
+              <button id="copy-html" type="button" disabled>Copier le HTML</button>
+            </div>
+          </div>
+          <pre id="html-output-pre" tabindex="0" aria-labelledby="html-output-title" aria-busy="true"><code id="html-output-code">Sélectionnez un composant ou une page pour générer son HTML.</code></pre>
+        </div>
+      </details>
+
+      <details class="quality-output" id="quality-output">
+        <summary>
+          <span>Qualité du rendu</span>
+          <span class="quality-output__status" id="quality-status">Non testé</span>
+        </summary>
+        <div class="quality-output__content" id="quality-panel" aria-busy="false">
+          <div class="quality-output__intro">
+            <p id="quality-privacy">Le contrôle HTML transmet le rendu au service Nu configuré. Par défaut, il s’agit du service officiel W3C.</p>
+            <p id="quality-live" role="status"></p>
+          </div>
+
+          <div class="quality-results">
+            <section class="quality-result" aria-labelledby="w3c-result-title">
+              <p class="section-kicker">Conformité HTML</p>
+              <h3 id="w3c-result-title">Nu HTML Checker</h3>
+              <p class="quality-result__summary" id="w3c-summary">Lancez le contrôle sur le HTML actuellement rendu.</p>
+              <div class="quality-result__issues" id="w3c-results"></div>
+            </section>
+
+            <section class="quality-result" aria-labelledby="axe-result-title">
+              <p class="section-kicker">Accessibilité automatique</p>
+              <h3 id="axe-result-title">Axe</h3>
+              <p class="quality-result__summary" id="axe-summary">L’analyse porte uniquement sur la variante affichée.</p>
+              <div class="quality-result__issues" id="axe-results"></div>
+            </section>
+
+            <section class="quality-result quality-result--manual" aria-labelledby="rgaa-result-title">
+              <p class="section-kicker">Prévention RGAA</p>
+              <h3 id="rgaa-result-title">Vérifications manuelles</h3>
+              <p class="quality-result__summary">Les contrôles automatiques ne prouvent pas la conformité RGAA.</p>
+              <ul>
+                <li>Parcours clavier et visibilité du focus.</li>
+                <li>Sur une page : langue, titre, landmarks, titres et lien d'évitement.</li>
+                <li>Restitution avec les technologies d’assistance.</li>
+                <li>Pertinence des libellés, alternatives et messages.</li>
+                <li>Comportement en zoom, reflow et contextes réels.</li>
+              </ul>
+            </section>
+          </div>
+        </div>
+      </details>
+
+      <div class="canvas__footer">
+        <p id="render-status" role="status">En attente du preview…</p>
+        <p>Les modifications sont temporaires et ne réécrivent pas le JSON.</p>
+      </div>
+    </main>
+
+    <aside class="inspector" aria-labelledby="inspector-title">
+      <header class="inspector__header">
+        <div>
+          <p class="section-kicker">Contrat JSON</p>
+          <h2 id="inspector-title">Propriétés</h2>
+        </div>
+        <button class="reset-button" id="reset-controls" type="button" disabled>Réinitialiser</button>
+      </header>
+
+      <form class="inspector__form" id="controls-form">
+        <p class="inspector__empty" id="inspector-empty">Aucun composant ou page à configurer pour le moment.</p>
+        <div id="controls-container"></div>
+        <div id="composition-container"></div>
+      </form>
+
+      <details class="props-output">
+        <summary>Props effectives</summary>
+        <pre id="props-output">{}</pre>
+      </details>
+    </aside>
+  </div>
+
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>
