@@ -216,7 +216,11 @@ function preventPageNavigation(event) {
 
 function syncPageHeight() {
   // Pleine hauteur du contenu : seule la zone d'aperçu du Showcase défile, jamais l'iframe de la page.
-  const contentHeight = pageFrame.contentDocument?.documentElement.scrollHeight ?? 720
+  // Pendant le remplacement du srcdoc, le document de l'iframe est vide (documentElement null) :
+  // garder la hauteur actuelle, le prochain redimensionnement la mettra à jour.
+  const pageRoot = pageFrame.contentDocument?.documentElement
+  if (!pageRoot) return Number.parseInt(pageFrame.style.height, 10) || 720
+  const contentHeight = pageRoot.scrollHeight
   const pageHeight = Math.max(720, Math.ceil(contentHeight))
   pageFrame.style.height = `${pageHeight}px`
   return pageHeight
