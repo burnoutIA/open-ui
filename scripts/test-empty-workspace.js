@@ -12,10 +12,10 @@ try {
   fs.copyFileSync(path.join(root, 'vite.config.js'), path.join(fixture, 'vite.config.js'))
   fs.cpSync(path.join(root, 'showcase'), path.join(fixture, 'showcase'), { recursive: true })
   fs.mkdirSync(path.join(fixture, 'scripts'))
-  fs.copyFileSync(
-    path.join(root, 'scripts/design-system.js'),
-    path.join(fixture, 'scripts/design-system.js')
-  )
+  // Pas d'openui.config.json dans la copie : le mode SCSS par défaut doit suffire.
+  for (const script of ['design-system.js', 'openui-config.js']) {
+    fs.copyFileSync(path.join(root, 'scripts', script), path.join(fixture, 'scripts', script))
+  }
 
   const result = spawnSync(process.execPath, [viteBin, 'build'], {
     cwd: fixture,

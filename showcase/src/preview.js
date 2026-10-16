@@ -1,4 +1,4 @@
-import 'virtual:openui-project-styles.scss'
+import 'virtual:openui-project-styles'
 import { SHOWCASE_API, SHOWCASE_MESSAGES, SHOWCASE_PREVIEW_SOURCE, SHOWCASE_SOURCE } from '../shared/protocol.js'
 import { normalizeAxeResults } from './quality-state.js'
 

@@ -7,17 +7,20 @@ import { getShowcaseCatalog, getShowcaseEntry, normalizeShowcaseProps } from './
 import { readJsonBody, sendJson } from './showcase/server/http.js'
 import { createProjectStylesheetSource } from './showcase/server/project-style.js'
 import { validateHtmlWithW3c } from './showcase/server/html-validator.js'
+import { loadOpenUIConfig } from './scripts/openui-config.js'
 
 const ROOT = process.cwd()
+const CONFIG = loadOpenUIConfig(ROOT)
 const PAGES_DIR = path.join(ROOT, 'dev/pages')
 const SKETCHES_DIR = path.join(ROOT, 'dev/sketches')
 const SHOWCASE_DIR = path.join(ROOT, 'showcase')
-const PROJECT_STYLESHEET = path.join(ROOT, 'dev/assets/scss/style.scss')
+const PROJECT_STYLESHEET = CONFIG.styleEntry
 const OUT_DIR = path.join(ROOT, 'public')
 const PUBLIC_SKETCHES_DIR = path.join(OUT_DIR, 'sketches')
 const FULL_RELOAD_DELAY = 150
-const PROJECT_STYLESHEET_ID = 'virtual:openui-project-styles.scss'
-const RESOLVED_PROJECT_STYLESHEET_ID = `\0${PROJECT_STYLESHEET_ID}`
+const PROJECT_STYLESHEET_ID = 'virtual:openui-project-styles'
+// L'extension du module résolu choisit le pipeline Vite : Sass ou CSS (Tailwind).
+const RESOLVED_PROJECT_STYLESHEET_ID = `\0${PROJECT_STYLESHEET_ID}.${CONFIG.styling === 'tailwind' ? 'css' : 'scss'}`
 
 // Les includes utilisent des chemins depuis la racine ('dev/components/...')
 // settings.views = ROOT indique à twig 3.x d'utiliser ROOT comme base de résolution.
@@ -148,7 +151,7 @@ function openUIPlugin() {
     load(id) {
       if (id !== RESOLVED_PROJECT_STYLESHEET_ID) return
       if (fs.existsSync(PROJECT_STYLESHEET)) this.addWatchFile(PROJECT_STYLESHEET)
-      return createProjectStylesheetSource(PROJECT_STYLESHEET)
+      return createProjectStylesheetSource(PROJECT_STYLESHEET, CONFIG.styling)
     },
 
     // Build : rend chaque page Twig → HTML temporaire, passé à Rollup comme entrée
@@ -315,9 +318,13 @@ function openUIPlugin() {
       const isProjectStylesheet = path.resolve(file) === PROJECT_STYLESHEET
 
       if (isProjectContract || isSketch || isProjectStylesheet) {
-        if (isProjectStylesheet) {
+        // En Tailwind, un Twig modifié peut introduire de nouvelles classes : la feuille doit être régénérée.
+        if (isProjectStylesheet || (CONFIG.styling === 'tailwind' && isProjectContract)) {
           const stylesheetModule = server.moduleGraph.getModuleById(RESOLVED_PROJECT_STYLESHEET_ID)
           if (stylesheetModule) server.moduleGraph.invalidateModule(stylesheetModule)
+          for (const module of server.moduleGraph.getModulesByFile(PROJECT_STYLESHEET) ?? []) {
+            server.moduleGraph.invalidateModule(module)
+          }
         }
         clearTimeout(fullReloadTimer)
         fullReloadTimer = setTimeout(() => {
@@ -329,10 +336,17 @@ function openUIPlugin() {
   }
 }
 
-export default defineConfig({
+// Tailwind n'est chargé qu'en mode tailwind : le mode SCSS ne paie pas son coût.
+async function stylingPlugins() {
+  if (CONFIG.styling !== 'tailwind') return []
+  const { default: tailwindcss } = await import('@tailwindcss/vite')
+  return [tailwindcss()]
+}
+
+export default defineConfig(async () => ({
   // Le rendu public doit rester portable, y compris ouvert directement en file://.
   base: './',
-  plugins: [openUIPlugin()],
+  plugins: [openUIPlugin(), ...(await stylingPlugins())],
   server: {
     port: 3000,
     watch: {
@@ -355,4 +369,4 @@ export default defineConfig({
     outDir: 'public',
     emptyOutDir: true
   }
-})
+}))

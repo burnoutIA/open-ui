@@ -815,6 +815,34 @@ a:focus-visible {
   white-space: pre;
 }
 
+.html-output .token.comment,
+.html-output .token.prolog,
+.html-output .token.cdata {
+  color: #9aa8a4;
+  font-style: italic;
+}
+
+.html-output .token.doctype,
+.html-output .token.entity {
+  color: #d7b3e0;
+}
+
+.html-output .token.punctuation {
+  color: #a8b5b1;
+}
+
+.html-output .token.tag {
+  color: #8fd3c8;
+}
+
+.html-output .token.attr-name {
+  color: #f0c987;
+}
+
+.html-output .token.attr-value {
+  color: #b9dc8f;
+}
+
 .clipboard-helper {
   position: fixed;
   inset-block-start: -100vh;

@@ -95,7 +95,7 @@ for (const component of components) {
   if (!schema.description) fail(file, 'missing description')
   validateStatus(file, schema.status)
   if (!fs.existsSync(component.twigPath)) fail(file, `missing twig file ${component.twigPath}`)
-  if (!fs.existsSync(component.scssPath)) warn(file, `missing component scss ${component.scssPath}`)
+  if (component.scssPath && !fs.existsSync(component.scssPath)) warn(file, `missing component scss ${component.scssPath}`)
   if (!fs.existsSync(component.mdPath)) warn(file, `missing component documentation ${component.mdPath}`)
 
   validateControls(file, 'variants', schema.variants ?? {})

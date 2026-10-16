@@ -12,7 +12,7 @@ Open UI est un workspace de design system agent-first. Le modele composant doit 
 - Le JSON est la source de verite des metadonnees, controles, relations et defaults exposables.
 - Le Twig est le rendu, sans logique metier.
 - Le Markdown explique l'usage, les props, l'accessibilite et les exemples.
-- Le SCSS associe vit dans `dev/assets/scss/components/_[name].scss` et doit etre importe depuis `dev/assets/scss/style.scss`.
+- Les styles suivent le mode de `openui.config.json` : feuille `_[name].scss` importee dans le point d'entree en SCSS (`docs/styling-scss.md`), classes utilitaires dans le Twig en Tailwind (`docs/styling-tailwind.md`).
 - Un composant doit etre reutilise avant d'etre recree.
 - Modifier une page signifie souvent modifier un composant ou une configuration de composant, pas patcher la page directement.
 - Une page canonique vit dans `dev/pages/` avec au minimum `[name].json` et `[name].twig`. Elle utilise les mêmes groupes `variants` et `content` qu'un composant pour exposer ses variables dans le Showcase.
@@ -38,7 +38,7 @@ Open UI est un workspace de design system agent-first. Le modele composant doit 
 
 - `showcase/` appartient au moteur versionné et n'est pas généré par le workspace utilisateur.
 - `dev/` peut ne contenir que `.gitkeep`, ou être momentanément absent : la cartographie et le Showcase doivent alors retourner zéro composant et zéro page sans échouer.
-- `dev/assets/scss/style.scss` devient nécessaire seulement lorsqu'un projet commence à définir ses styles ; le Showcase fournit une feuille vide avant sa création.
+- Le point d'entrée des styles (`styleEntry`) devient nécessaire seulement lorsqu'un projet commence à définir ses styles ; le Showcase fournit une feuille vide avant sa création.
 - `public/` n'est jamais un prérequis : `npm run build` le crée comme sortie générée.
 
 ## Hierarchie

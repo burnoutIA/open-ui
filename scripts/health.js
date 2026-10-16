@@ -1,14 +1,13 @@
 import fs from 'fs'
 import path from 'path'
-import { collectRefs, collectTwigIncludes, getComponentEntries, getPageEntries } from './design-system.js'
+import { collectRefs, collectTwigIncludes, getComponentEntries, getPageEntries, OPENUI_CONFIG } from './design-system.js'
 
 const checks = []
 const components = getComponentEntries()
 const pages = getPageEntries()
 const componentIds = new Set(components.map((component) => component.id))
-const stylePath = path.join(process.cwd(), 'dev/assets/scss/style.scss')
+const stylePath = OPENUI_CONFIG.styleEntry
 const styleContent = fs.existsSync(stylePath) ? fs.readFileSync(stylePath, 'utf8') : ''
-const allowedStatuses = new Set(['canonical', 'draft', 'sketch'])
 
 function add(status, scope, file, message, detail = '') {
   checks.push({ status, scope, file, message, detail })
@@ -88,16 +87,6 @@ function scssImportHint(scssPath) {
   return `@use '${path.basename(path.dirname(scssPath))}/${path.basename(scssPath, '.scss').replace(/^_/, '')}';`
 }
 
-function checkStatus(file, schema, scope) {
-  if (!schema.status) {
-    if (scope === 'component') add('warn', 'json', file, 'Status absent, traité comme canonical temporairement')
-    return
-  }
-  if (!allowedStatuses.has(schema.status)) add('error', 'json', file, `Status non supporté: ${schema.status}`)
-  if (scope === 'component' && schema.status === 'sketch') add('error', 'json', file, 'Un composant dans dev/components ne peut pas être status=sketch')
-  if (scope === 'page' && schema.status === 'sketch') add('error', 'json', file, 'Une page canonique ne peut pas être status=sketch')
-}
-
 function checkRefs(file, refs) {
   for (const ref of refs) {
     if (ref !== 'grid' && !componentIds.has(ref)) add('error', 'refs', file, `Référence inconnue: ${ref}`)
@@ -119,10 +108,9 @@ function checkComponent(component) {
   }
 
   if (!fs.existsSync(twigPath)) add('error', 'files', twigPath, 'Template Twig absent')
-  checkStatus(jsonPath, schema, 'component')
 
-  if (!fs.existsSync(scssPath)) add('error', 'files', scssPath, 'SCSS composant absent')
-  if (fs.existsSync(scssPath) && !hasScssImport(scssPath)) {
+  if (scssPath && !fs.existsSync(scssPath)) add('error', 'files', scssPath, 'SCSS composant absent')
+  if (scssPath && fs.existsSync(scssPath) && !hasScssImport(scssPath)) {
     add('error', 'scss', stylePath, `Import SCSS manquant pour ${id}`, scssImportHint(scssPath))
   }
 
@@ -137,9 +125,8 @@ function checkPage(page) {
   const { id, jsonPath, twigPath, scssPath, schema } = page
 
   checkRequiredJson(jsonPath, schema, ['name', 'description'])
-  checkStatus(jsonPath, schema, 'page')
   if (!fs.existsSync(twigPath)) add('error', 'files', twigPath, 'Template Twig absent')
-  if (fs.existsSync(scssPath) && !hasScssImport(scssPath)) {
+  if (scssPath && fs.existsSync(scssPath) && !hasScssImport(scssPath)) {
     add('error', 'scss', stylePath, `Import SCSS de page manquant pour ${id}`, scssImportHint(scssPath))
   }
   checkControls(jsonPath, 'variants', schema.variants)
@@ -149,7 +136,7 @@ function checkPage(page) {
 }
 
 // Un workspace vide est valide : le point d'entrée SCSS ne devient obligatoire qu'avec du contenu.
-if ((components.length || pages.length) && !fs.existsSync(stylePath)) add('error', 'scss', stylePath, 'Point d’entrée SCSS absent')
+if ((components.length || pages.length) && !fs.existsSync(stylePath)) add('error', 'styles', stylePath, 'Point d’entrée des styles absent')
 for (const component of components) checkComponent(component)
 for (const page of pages) checkPage(page)
 

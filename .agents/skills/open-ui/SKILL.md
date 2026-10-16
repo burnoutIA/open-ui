@@ -16,7 +16,7 @@ Ce skill guide l'agent dans Open UI comme gardien prudent du design system, pas 
 
 ## Intention produit
 
-Open UI est un framework agentique de design/dev UI sans friction : l'agent conçoit directement en Twig/SCSS/JS, dans un workspace de design system lisible, réutilisable et contrôlé.
+Open UI est un framework agentique de design/dev UI sans friction : l'agent conçoit directement en Twig/JS avec SCSS ou Tailwind selon `openui.config.json`, dans un workspace de design system lisible, réutilisable et contrôlé.
 
 L'effort premier porte sur la structure durable du projet : comprendre les composants, réutiliser avant de créer, modifier au bon niveau, préserver les tokens et prévenir clairement des impacts. Open UI doit aussi permettre des maquettes libres en début de projet, mais ce tunnel est séparé du design system canonique et doit être déclenché explicitement.
 
@@ -54,10 +54,10 @@ L'effort premier porte sur la structure durable du projet : comprendre les compo
 - Avant toute implémentation, se demander explicitement : "ai-je toutes les informations nécessaires pour réaliser cette tâche correctement ?" Si non, poser les précisions minimales avant de produire.
 - Réutiliser avant de créer : composant, variante, part, collection, family, instance, layout group ou token existant.
 - Modifier au bon niveau : token, composant, variante, composition, page ou esquisse ; éviter les patchs locaux quand le besoin est systémique.
-- Préserver les tokens et conventions SCSS : pas de valeurs magiques si un token existe ou devrait exister.
+- Préserver les tokens et conventions de style du mode configuré (`docs/styling-scss.md` ou `docs/styling-tailwind.md`, ne lire que celle-là) : pas de valeurs magiques si un token existe ou devrait exister.
 - Annoncer les impacts : composants parents/enfants, pages touchées, tokens transversaux, risques visuels/a11y.
 - Appliquer le socle RGAA sur toute UI visible ; pour composant interactif, formulaire, navigation, tableau, image/media ou page complete, utiliser le skill `rgaa`.
-- Valider après modification : au minimum `npm run validate`; si styles/rendu changent, ajouter `npm run lint:scss` et `npm run build`; si composant partagé, ajouter `npm run impact <nom>`.
+- Valider après modification : au minimum `npm run validate`; si styles/rendu changent, ajouter `npm run lint:scss` (mode SCSS) et `npm run build`; si composant partagé, ajouter `npm run impact <nom>`.
 - Vérifier visuellement toute modification UI visible avant livraison avec le navigateur quand disponible.
 - Ne jamais présenter une maquette libre comme un composant stable : elle doit être isolée, marquée exploratoire et non référencée par défaut dans le design system canonique.
 
@@ -129,12 +129,12 @@ Avant d'écrire, surtout si la demande est peu cadrée, touche un composant part
 ## Workflow standard
 
 1. Cartographier le contexte : composant/page/token demandé, relations, usages et risques.
-2. Lire les sources concernées : `.twig`, `.json`, `.md`, SCSS, page utilisatrice, docs pertinentes.
+2. Lire les sources concernées : `.twig`, `.json`, `.md`, styles, page utilisatrice, docs pertinentes.
 3. Choisir le niveau de changement durable : token, composant, variante, composition, page, esquisse.
 4. Si la cible est une page ou un composant, la marquer `in-progress` dans son JSON, puis modifier de façon minimale mais cohérente avec le design system.
 5. Vérifier impacts et usages.
 6. Verifier le risque RGAA si UI visible ; charger le skill `rgaa` pour les composants/pages avec interaction, formulaire, navigation, tableau ou media.
-7. Tester : `npm run validate`, puis selon le changement `npm run lint:scss`, `npm run build`, `npm run list`, `npm run impact <nom>`.
+7. Tester : `npm run validate`, puis selon le changement `npm run lint:scss` (mode SCSS), `npm run build`, `npm run list`, `npm run impact <nom>`.
 8. Si UI visible : ouvrir la page, tester l'interaction si besoin, capturer ou extraire le rendu.
 9. Pour une page ou un composant, passer la cible à `done` seulement si les vérifications attendues sont réussies, puis répondre avec : changements, impacts, validations, preuve visuelle si pertinente, risques/restes.
 
@@ -175,8 +175,7 @@ Créer un composant canonique seulement si la réutilisation ou une variante exi
 - `<name>.twig` ;
 - `<name>.json` ;
 - `<name>.md` ;
-- SCSS dans `dev/assets/scss/components/` si nécessaire ;
-- import SCSS dans `dev/assets/scss/style.scss` si un fichier SCSS est ajouté ;
+- styles selon le mode configuré : `_<name>.scss` importé dans le point d'entrée en SCSS, tables de classes complètes dans le Twig en Tailwind ;
 - relations documentées si le composant contient ou référence d'autres composants.
 
 ## Esquisses

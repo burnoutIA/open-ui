@@ -2,6 +2,7 @@ import { SHOWCASE_API, SHOWCASE_MESSAGES, SHOWCASE_PREVIEW_SOURCE, SHOWCASE_SOUR
 import { getComponentDefaults, renderComposition, renderControls } from './controls.js'
 import { summarizeQualityReport } from './quality-state.js'
 import { isCurrentRender, normalizeRenderedHtml } from './render-state.js'
+import { highlightHtml } from './html-highlight.js'
 
 const LEVEL_ORDER = ['page', 'atom', 'molecule', 'organism', 'template']
 const LEVEL_LABELS = {
@@ -318,7 +319,8 @@ function updateRenderedHtml(html) {
   state.renderedHtml = normalizeRenderedHtml(html)
   elements.htmlStatus.textContent = 'À jour'
   elements.htmlPre.setAttribute('aria-busy', 'false')
-  elements.htmlCode.textContent = state.renderedHtml || '<!-- Le rendu ne produit aucun HTML. -->'
+  if (state.renderedHtml) elements.htmlCode.innerHTML = highlightHtml(state.renderedHtml)
+  else elements.htmlCode.textContent = '<!-- Le rendu ne produit aucun HTML. -->'
   elements.copyHtml.disabled = !state.renderedHtml
   elements.copyHtmlStatus.textContent = ''
   elements.qualityButton.disabled = !state.renderedHtml

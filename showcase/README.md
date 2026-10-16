@@ -17,7 +17,8 @@ Puis ouvrir `/showcase/` depuis l'index Open UI.
 - `showcase/` contient l'outil système suivi par Git.
 - `dev/` reste la source locale du projet utilisateur.
 - `dev/` peut être absent ou vide : le catalogue expose alors un état de démarrage sans erreur ;
-- `dev/assets/scss/style.scss` est chargé par un module virtuel et remplacé par une feuille vide tant que ce fichier n'existe pas ;
+- le point d'entrée des styles (`styleEntry` de `openui.config.json`, SCSS ou Tailwind) est chargé par un module virtuel et remplacé par une feuille vide tant que ce fichier n'existe pas ;
+- le panneau `HTML généré` colore le code avec Prism ; la copie reste le HTML brut ;
 - le formulaire du Showcase ne modifie jamais les JSON : ses valeurs sont temporaires ;
 - les contrôles `array` avec un schéma `item` utilisent un éditeur de liste avec ajout, suppression et champs nommés ; le JSON brut reste uniquement un repli quand la forme d'un item est indéterminable ;
 - le panneau `HTML généré` expose et copie uniquement le dernier HTML effectivement rendu dans l'iframe ; la copie est désactivée pendant une mise à jour ou après une erreur ;

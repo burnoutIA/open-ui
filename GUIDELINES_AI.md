@@ -2,7 +2,7 @@
 
 > Document universel. Toute IA qui lit ce fichier doit pouvoir creer un composant conforme sans autre explication.
 >
-> Les contrats detailles du projet vivent aussi dans `docs/` : modele composant, analyse d'impact, workflow agent, tokens, multi-projets et esquisses.
+> Les contrats detailles du projet vivent aussi dans `docs/` : modele composant, analyse d'impact, workflow agent, tokens, multi-projets, esquisses et modes de style.
 
 ---
 
@@ -68,13 +68,7 @@ Structure imposee pour `[nom].md` :
 ```
 ```
 
-SCSS associe :
-
-```text
-dev/assets/scss/components/_[nom].scss
-```
-
-A importer manuellement dans `dev/assets/scss/style.scss`.
+Styles associes : selon le mode declare dans `openui.config.json` (voir section 5).
 
 ---
 
@@ -397,7 +391,7 @@ Usage recommande :
 Regles absolues :
 - `|default()` obligatoire sur chaque variable exposee
 - pas de logique metier, uniquement de l'affichage
-- BEM strict pour les classes : `.block__element--modifier`
+- classes selon le mode de style (section 5) : BEM en SCSS, tables d'utilitaires en Tailwind
 - pas de styles inline
 - accessibilite integree des la conception
 
@@ -448,36 +442,27 @@ Regle `include` :
 
 ---
 
-## 5. SCSS d'un composant - regles
+## 5. Styles d'un composant - mode configure
 
-```scss
-@use '../base/variables' as *;
-@use '../base/mixins' as *;
+Open UI propose deux modes de style, choisis en debut de projet dans `openui.config.json` :
 
-.btn {
-  &--primary { /* variante */ }
-  &--sm { /* taille */ }
-  &--full { width: 100%; }
-
-  &:focus-visible {
-    @include focus-ring;
-  }
-
-  &:disabled,
-  &[aria-disabled="true"] {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
+```json
+{ "styling": "scss" }
 ```
 
-Regles :
-- `@use '../base/variables' as *;` en tete de chaque fichier composant
-- variables design system obligatoires, zero valeur hardcodee si un token existe
+| `styling` | Doc a lire | Point d'entree par defaut |
+|-----------|-----------|---------------------------|
+| `"scss"` (defaut, ou fichier absent) | `docs/styling-scss.md` | `dev/assets/scss/style.scss` |
+| `"tailwind"` | `docs/styling-tailwind.md` | `dev/assets/css/style.css` |
+
+Lire uniquement la doc du mode configure : elle donne les regles de fichiers, tokens, variantes, nommage et verifications. `styleEntry` permet de deplacer le point d'entree.
+
+Regles communes aux deux modes :
+- tokens du design system obligatoires, zero valeur hardcodee si un token existe
 - pas de `!important`
-- pas de selecteurs HTML nus dans les composants (`.btn` oui, `button` non)
+- pas de styles inline
+- focus visible sur tout element interactif
 - mobile first
-- import manuel dans `style.scss`
 
 ### Contrat responsive
 
@@ -491,50 +476,9 @@ Regles :
 
 ---
 
-## 6. Variables SCSS disponibles
+## 6. Tokens disponibles
 
-### Couleurs
-```scss
-$color-primary / $color-primary-light / $color-primary-dark
-$color-secondary / $color-secondary-light / $color-secondary-dark
-$color-success / $color-success-light / $color-success-dark
-$color-danger / $color-danger-light / $color-danger-dark
-$color-warning / $color-warning-light / $color-warning-dark
-$color-gray-50 ... $color-gray-900
-$color-white / $color-black
-```
-
-### Typographie
-```scss
-$font-size-xs / sm / base / lg / xl / 2xl / 3xl / 4xl
-$font-weight-normal / medium / semibold / bold
-$line-height-tight / normal / relaxed
-$font-family-base / $font-family-mono
-```
-
-### Espacements
-```scss
-$spacing-xs / sm / md / lg / xl / 2xl / 3xl
-```
-
-### Autres
-```scss
-$radius-sm / md / lg / xl / 2xl / full
-$shadow-sm / md / lg / xl
-$transition-fast / base / slow
-$breakpoint-sm / md / lg / xl / 2xl
-$z-dropdown / sticky / fixed / modal-backdrop / modal / popover / tooltip
-```
-
-### Mixins
-```scss
-@include respond-to('md')
-@include flex-center
-@include flex-between
-@include truncate
-@include visually-hidden
-@include focus-ring
-```
+Les tokens dependent du mode : variables SCSS dans `docs/styling-scss.md`, `@theme` Tailwind dans `docs/styling-tailwind.md`.
 
 ---
 
@@ -610,21 +554,20 @@ dev/components/[nom]/
 ### Etape 3 - Creer `[nom].twig`
 
 - declarer toutes les variables avec `{% set var = var|default(...) %}`
-- construire le HTML avec BEM
+- construire le HTML avec les classes du mode de style (section 5)
 - inclure les components enfants avec `with { ... }`
 - integrer les attributs ARIA necessaires
 
-### Etape 4 - Creer `dev/assets/scss/components/_[nom].scss`
+### Etape 4 - Styler le composant
 
-- `@use '../base/variables' as *;` en premiere ligne
-- styles BEM avec variables design system
-- gerer `:focus-visible`, `:disabled`, etats et variantes
+- suivre la doc du mode configure (section 5)
+- SCSS : creer `components/_[nom].scss` et l'importer dans le point d'entree
+- Tailwind : tables de classes completes en tete du Twig, tokens dans `@theme`
+- gerer focus visible, etat desactive, etats et variantes
 
-### Etape 5 - Importer dans `style.scss`
+### Etape 5 - Verifier le chargement des styles
 
-```scss
-@use 'components/[nom]';
-```
+- le composant est style dans le Showcase pour chaque option de variante
 
 ### Etape 6 - Creer `[nom].md`
 
@@ -647,10 +590,7 @@ dev/components/[nom]/
 |---------|-----------|---------|
 | Dossier composant | `kebab-case` | `form-field/` |
 | Fichier Twig | `kebab-case.twig` | `form-field.twig` |
-| Fichier SCSS | `_kebab-case.scss` | `_form-field.scss` |
 | Fichier JSON | `kebab-case.json` | `form-field.json` |
-| Classes CSS | BEM `.block__element--modifier` | `.btn--primary` |
-| Variables SCSS | `$categorie-nom` | `$color-primary`, `$spacing-md` |
 | Fichier SVG icone | `kebab-case.svg` | `arrow-right.svg` |
 | Champ parent `autoBind` | `[prefixe][ChampEnfantCapitalise]` | `ctaText`, `footerCopyright` |
 
@@ -669,8 +609,7 @@ dev/components/[nom]/
 | Mapper a la main tous les champs alors que la convention suffit | Utiliser `autoBind: true` |
 | Exposer en bulk une liste de champs editoriaux item par item | Utiliser `exclude` sur la collection |
 | Atom qui inclut une molecule | Respecter la composition descendante |
-| Import SCSS auto-genere | Import manuel dans `style.scss` |
-| `outline: none` sans alternative | Utiliser `@include focus-ring` |
+| `outline: none` sans alternative | Focus visible selon la doc du mode de style |
 
 ---
 

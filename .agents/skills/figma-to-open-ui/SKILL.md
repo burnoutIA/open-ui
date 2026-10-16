@@ -41,7 +41,7 @@ Utiliser cet artefact comme contrat entre les deux phases :
 1. Resoudre l'URL Figma vers le fichier, le node et la frame exacts. Si plusieurs cibles sont possibles, demander laquelle analyser.
 2. Obtenir le rendu de reference et les donnees disponibles : structure, composants/instances, variantes, auto-layout, contraintes, styles, assets, textes, etats, interactions et frames responsive.
 3. Identifier ce qui est explicitement present dans Figma et ce qui serait une inference. Ne pas transformer une absence de specification en decision certaine.
-4. Vérifier `.openui/graph.json` avec `npm run graph:check`, le régénérer si nécessaire, puis cartographier le design system depuis cet index compact. Lire les JSON, Twig, Markdown et SCSS seulement pour les candidats pertinents.
+4. Vérifier `.openui/graph.json` avec `npm run graph:check`, le régénérer si nécessaire, puis cartographier le design system depuis cet index compact. Lire les JSON, Twig, Markdown et styles seulement pour les candidats pertinents.
 5. Classer chaque bloc significatif avec une seule decision provisoire :
    - `reuse` ;
    - `reuse-with-props` ;
@@ -77,9 +77,9 @@ Lorsqu'une reponse utilisateur confirme ou corrige l'analyse :
    - variantes confirmees ;
    - nouveaux composants justifies ;
    - composition de la page avec les composants canoniques.
-5. Respecter les contrats Open UI : JSON, Twig, Markdown, SCSS, tokens, relations et imports. Ne pas copier le markup d'un composant dans la page.
+5. Respecter les contrats Open UI : JSON, Twig, Markdown, styles du mode configuré (`docs/styling-*.md`), tokens, relations et imports. Ne pas copier le markup d'un composant dans la page.
 6. Mettre a jour l'analyse avec les cibles effectivement creees ou reutilisees, sans dupliquer les relations que le graphe peut recalculer.
-7. Lancer les validations Open UI proportionnees : JSON, tests, lint SCSS, build et impact des composants partages.
+7. Lancer les validations Open UI proportionnees : JSON, tests, lint SCSS en mode SCSS, build et impact des composants partages.
 8. Ouvrir le rendu reel et comparer avec la frame Figma de reference : structure, ordre de lecture, dimensions significatives, alignements, espacements, typographie, couleurs, contenus et etats.
 9. Corriger les ecarts de mise en oeuvre. Ne pas reproduire une anomalie Figma qui contredit une regle confirmee du design system sans demander un arbitrage.
 10. Tester les largeurs observees dans Figma puis les viewports projet. A defaut de configuration, couvrir au minimum mobile, tablette et desktop. Tester aussi contenu long et absence de contenu quand ils sont plausibles.

@@ -1,4 +1,4 @@
 {
-  "styleEntry": "/dev/assets/scss/style.scss",
-  "tailwind": false
+  "styling": "scss",
+  "styleEntry": "dev/assets/scss/style.scss"
 }

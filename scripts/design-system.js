@@ -1,11 +1,14 @@
 import fs from 'fs'
 import path from 'path'
 import { createHash } from 'crypto'
+import { loadOpenUIConfig } from './openui-config.js'
 
 export const ROOT = process.cwd()
 export const COMPONENTS_DIR = path.join(ROOT, 'dev/components')
 export const PAGES_DIR = path.join(ROOT, 'dev/pages')
-export const SCSS_DIR = path.join(ROOT, 'dev/assets/scss')
+export const OPENUI_CONFIG = loadOpenUIConfig(ROOT)
+// En SCSS, chaque composant a sa feuille à côté du point d'entrée ; en Tailwind, les styles vivent dans le Twig.
+export const SCSS_DIR = OPENUI_CONFIG.styling === 'scss' ? path.dirname(OPENUI_CONFIG.styleEntry) : null
 export const GRAPH_PATH = path.join(ROOT, '.openui/graph.json')
 export const DESIGN_SYSTEM_STATUSES = ['todo', 'in-progress', 'done']
 const SYSTEM_DEPENDENCIES = new Set(['grid'])
@@ -40,7 +43,7 @@ export function getComponentEntries() {
       jsonPath,
       twigPath: path.join(dir, `${id}.twig`),
       mdPath: path.join(dir, `${id}.md`),
-      scssPath: path.join(SCSS_DIR, 'components', `_${id}.scss`),
+      scssPath: SCSS_DIR && path.join(SCSS_DIR, 'components', `_${id}.scss`),
       schema: readJson(jsonPath)
     }
   })
@@ -56,7 +59,7 @@ export function getPageEntries() {
       jsonPath,
       twigPath: path.join(dir, `${id}.twig`),
       mdPath: path.join(dir, `${id}.md`),
-      scssPath: path.join(SCSS_DIR, 'components', `_${id}-page.scss`),
+      scssPath: SCSS_DIR && path.join(SCSS_DIR, 'components', `_${id}-page.scss`),
       schema: readJson(jsonPath)
     }
   })

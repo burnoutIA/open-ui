@@ -95,8 +95,7 @@ Pour un composant dans `dev/components/[name]/`, créer ou mettre à jour :
 - `[name].json` : source de vérité, métadonnées, contrôles, defaults ;
 - `[name].twig` : rendu sans logique métier ;
 - `[name].md` : usage, props, accessibilité, exemples ;
-- `dev/assets/scss/components/_[name].scss` ;
-- import SCSS dans `dev/assets/scss/style.scss`.
+- les styles selon le mode configure : `_[name].scss` importe dans le point d'entree (SCSS) ou classes utilitaires dans le Twig (Tailwind).
 
 Réutiliser les composants existants avant d'en créer de nouveaux.
 
@@ -128,7 +127,7 @@ Points design minimum :
 
 - Ajouter la page ou le composant de démonstration nécessaire.
 - Mettre à jour la documentation concernée.
-- Lancer les validations disponibles adaptées à l'impact : liste, build, tests, lint SCSS, accessibilité.
+- Lancer les validations disponibles adaptées à l'impact : liste, build, tests, lint SCSS en mode SCSS, accessibilité.
 - Annoncer les impacts : composants touchés, pages touchées, tokens touchés, risques restants.
 
 ### 9. Statut de l'esquisse source
@@ -153,8 +152,8 @@ Avant promotion :
 
 Pendant promotion :
 
-- [ ] JSON/Twig/MD/SCSS créés ou mis à jour.
-- [ ] SCSS importé.
+- [ ] JSON/Twig/MD et styles créés ou mis à jour.
+- [ ] Styles chargés par le point d'entrée (import SCSS, ou classes détectées par Tailwind).
 - [ ] Props, variantes et états définis.
 - [ ] Tokens existants réutilisés ou nouveaux tokens justifiés.
 - [ ] Responsive traité.

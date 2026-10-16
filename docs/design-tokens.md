@@ -6,7 +6,7 @@ Les tokens garantissent la coherence visuelle d'Open UI. Ils doivent permettre d
 
 ## Contrat
 
-- Les tokens SCSS vivent principalement dans `dev/assets/scss/base/_variables.scss`.
+- Les tokens vivent selon le mode de style : `dev/assets/scss/base/_variables.scss` en SCSS, bloc `@theme` du point d'entree en Tailwind.
 - Les composants doivent utiliser les tokens existants avant d'introduire des valeurs locales.
 - Les styles inline sont interdits dans les templates Twig.
 - Toute nouvelle valeur repetee doit etre candidate a un token.

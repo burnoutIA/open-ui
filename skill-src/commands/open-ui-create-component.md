@@ -5,5 +5,5 @@ Crée un composant Open UI seulement après avoir vérifié qu'une réutilisatio
 
 1. Cherche les composants proches et les patterns existants.
 2. Décide composant canonique, variante ou composition.
-3. Crée les fichiers attendus (`.twig`, `.json`, `.md`, SCSS si nécessaire), déclare `status: "in-progress"` et documente les relations.
+3. Crée les fichiers attendus (`.twig`, `.json`, `.md`, styles du mode configuré), déclare `status: "in-progress"` et documente les relations.
 4. Mets à jour les imports et lance les validations pertinentes ; passe à `done` uniquement si elles réussissent.

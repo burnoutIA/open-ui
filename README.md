@@ -2,7 +2,7 @@
 
 ![alt text](image.png)
 
-Open UI est un workspace de design system pensé pour être lu et manipulé autant par des développeurs que par des agents. Les composants et les pages sont décrits par un contrat JSON, rendus avec Twig, stylés en SCSS et consultables dans un Showcase interactif.
+Open UI est un workspace de design system pensé pour être lu et manipulé autant par des développeurs que par des agents. Les composants et les pages sont décrits par un contrat JSON, rendus avec Twig, stylés en SCSS ou en Tailwind et consultables dans un Showcase interactif.
 
 Le projet peut démarrer sans aucun composant : `dev/` peut être vide et `public/` absent. Le Showcase reste disponible et présente alors un état de démarrage explicite.
 
@@ -41,7 +41,7 @@ Aucune commande d’initialisation n’est nécessaire. Le moteur du Showcase es
 - `dev/` est la racine structurelle des sources projet. Le dépôt conserve `dev/.gitkeep`, mais son contenu est actuellement ignoré par Git.
 - `public/` est une sortie générée. Vite le crée automatiquement pendant le build.
 - `showcase/` contient l’outil système : catalogue des composants et pages, inspecteur de propriétés, iframe de rendu et affichage du HTML courant.
-- La feuille `dev/assets/scss/style.scss` est facultative au départ. Le Showcase utilise une feuille vide tant qu’elle n’existe pas, puis charge automatiquement les styles du projet lorsqu’elle est créée.
+- La feuille de styles du projet est facultative au départ. Le Showcase utilise une feuille vide tant qu’elle n’existe pas, puis charge automatiquement les styles du projet lorsqu’elle est créée.
 
 Un workspace sans composant n’est donc pas une erreur : le catalogue affiche `0` et guide la création du premier composant.
 
@@ -56,12 +56,23 @@ dev/components/button/
 `- button.md
 ```
 
-Les styles associés vivent dans :
+## Choisir le mode de style
 
-```text
-dev/assets/scss/components/_button.scss
-dev/assets/scss/style.scss
+Le mode de style se choisit en début de projet dans `openui.config.json` :
+
+```json
+{
+  "styling": "scss",
+  "styleEntry": "dev/assets/scss/style.scss"
+}
 ```
+
+| `styling` | Styles d’un composant | Kit de départ | Règles |
+|---|---|---|---|
+| `scss` (défaut, ou fichier absent) | `dev/assets/scss/components/_button.scss`, importé dans `style.scss` | `templates/scss/` | [docs/styling-scss.md](./docs/styling-scss.md) |
+| `tailwind` | classes utilitaires dans `button.twig`, tokens dans `@theme` | `templates/tailwind/style.css` | [docs/styling-tailwind.md](./docs/styling-tailwind.md) |
+
+`styleEntry` est facultatif : par défaut `dev/assets/scss/style.scss` en SCSS et `dev/assets/css/style.css` en Tailwind. Relancer `npm run dev` après un changement de configuration.
 
 Le JSON décrit les métadonnées, variantes et contenus modifiables. Le Showcase transforme ces déclarations en contrôles humains, rerend le Twig à chaque modification et maintient le HTML affiché à jour.
 
@@ -113,10 +124,10 @@ Le Showcase ne réécrit jamais les JSON : les modifications faites dans son for
 | `npm run dev` | Lance Vite, le Showcase et les mises à jour live |
 | `npm run build` | Génère le rendu dans `public/` |
 | `npm run validate` | Valide les contrats JSON et régénère l’index local |
-| `npm run health` | Contrôle la dette structurelle : nommage, fichiers, docs, imports SCSS, statuts |
+| `npm run health` | Contrôle la dette structurelle : nommage, fichiers, docs, imports de styles |
 | `npm run test` | Lance les tests automatisés |
 | `npm run test:empty` | Construit une copie temporaire sans `dev/` ni `public/` |
-| `npm run lint:scss` | Vérifie les sources SCSS présentes |
+| `npm run lint:scss` | Vérifie les sources SCSS présentes (mode SCSS) |
 | `npm run graph` | Régénère `.openui/graph.json` |
 | `npm run graph:check` | Vérifie que l’index correspond aux sources |
 | `npm run list` | Liste les composants et les pages détectés |
@@ -134,5 +145,5 @@ Le Showcase ne réécrit jamais les JSON : les modifications faites dans son for
 - Réutiliser un composant ou une variante avant d’en créer un nouveau.
 - Garder le JSON comme contrat des variables exposées.
 - Garder Twig concentré sur le rendu, sans logique métier.
-- Utiliser les tokens SCSS et intégrer l’accessibilité dès la conception.
+- Utiliser les tokens du design system et intégrer l’accessibilité dès la conception.
 - Vérifier les impacts avant toute modification d’un composant partagé.
