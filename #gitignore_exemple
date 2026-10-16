@@ -10,6 +10,8 @@ docs/
 scripts/
 showcase/
 skill-src/
-GUIDELINES_AI.node_modulesimage.png
+GUIDELINES_AI.md
+.node_modules
+image.png
 MEMORY.md
 openui.config.json

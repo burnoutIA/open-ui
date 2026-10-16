@@ -9,3 +9,4 @@ dev/*
 !.env.example
 .openui-empty-*/
 .openui/graph.json
+.claude/*
