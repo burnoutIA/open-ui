@@ -18,7 +18,7 @@ Faire passer une maquette libre par un sas de consolidation avant integration au
 6. Annoncer la decision et les impacts si le changement est transversal.
 7. Implementer avec les garde-fous `open-ui` : fichiers attendus, docs, imports, impact, validations.
 8. Appliquer `rgaa` pour toute UI interactive, formulaire, navigation, tableau, media ou page complete.
-9. Verifier visuellement le rendu navigateur.
+9. Verifier visuellement le rendu avec `npm run snapshot -- <nom>`.
 10. Utiliser `design-memory` si la direction devient une decision projet durable.
 
 ## Sortie attendue

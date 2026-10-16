@@ -12,11 +12,12 @@ Open UI est un workspace de design system agent-first. Le modele composant doit 
 - Le JSON est la source de verite des metadonnees, controles, relations et defaults exposables.
 - Le Twig est le rendu, sans logique metier.
 - Le Markdown explique l'usage, les props, l'accessibilite et les exemples.
-- Le SCSS associe d'un composant vit dans `dev/assets/scss/components/_[name].scss` et doit etre importe depuis `dev/assets/scss/style.scss`.
-- Le SCSS specifique a une page vit dans `dev/assets/scss/pages/_[name]-page.scss`; le dossier `components/` reste reserve aux blocs UI reutilisables.
+- Un composant interactif ajoute `[name].js` : module sans initialisation, delegation d'evenements sur `document`, cible ses elements par `data-[name]-*`, importe dans le point d'entree JS (`scriptEntry`, par defaut `dev/assets/js/main.js`).
+- Les styles suivent le mode de `openui.config.json` : feuille `_[name].scss` importee dans le point d'entree en SCSS (`docs/styling-scss.md`), classes utilitaires dans le Twig en Tailwind (`docs/styling-tailwind.md`).
 - Un composant doit etre reutilise avant d'etre recree.
 - Modifier une page signifie souvent modifier un composant ou une configuration de composant, pas patcher la page directement.
-- Une page canonique vit dans `dev/pages/` avec au minimum `[name].json` et `[name].twig`. Elle utilise les mêmes groupes `variants` et `content` qu'un composant pour exposer ses variables dans le Showcase.
+- Une page canonique vit dans `dev/pages/` avec au minimum `[name].json` et `[name].twig`. Elle etend un gabarit de `dev/layouts/` (`{% extends %}`) qui porte le document, le header et le footer ; les donnees partagees (nom du site, navigation, liens legaux) viennent de `dev/data/site.json`, exposees sous `site`.
+- Les valeurs par defaut d'un composant ou d'une page viennent uniquement de son JSON : le moteur les injecte quand une prop n'est pas passee, y compris dans un `include ... only`. Elle utilise les mêmes groupes `variants` et `content` qu'un composant pour exposer ses variables dans le Showcase.
 - Le Showcase catalogue composants et pages. Une page y est rendue comme un document HTML complet afin de conserver sa langue, son titre, ses landmarks et sa structure globale pour les contrôles Axe et W3C.
 
 ## Index persistant
@@ -39,7 +40,7 @@ Open UI est un workspace de design system agent-first. Le modele composant doit 
 
 - `showcase/` appartient au moteur versionné et n'est pas généré par le workspace utilisateur.
 - `dev/` peut ne contenir que `.gitkeep`, ou être momentanément absent : la cartographie et le Showcase doivent alors retourner zéro composant et zéro page sans échouer.
-- `dev/assets/scss/style.scss` devient nécessaire seulement lorsqu'un projet commence à définir ses styles ; le Showcase fournit une feuille vide avant sa création.
+- Le point d'entrée des styles (`styleEntry`) devient nécessaire seulement lorsqu'un projet commence à définir ses styles ; le Showcase fournit une feuille vide avant sa création.
 - `public/` n'est jamais un prérequis : `npm run build` le crée comme sortie générée.
 
 ## Hierarchie
@@ -51,24 +52,6 @@ Open UI est un workspace de design system agent-first. Le modele composant doit 
 - `page` : instance avec contenu reel, dans `dev/pages/`.
 
 La composition reste descendante : un atom n'inclut pas une molecule, un organism n'inclut pas un template.
-
-## Statut JSON
-
-Un artefact JSON peut declarer un statut top-level :
-
-```json
-{
-  "status": "canonical"
-}
-```
-
-Statuts autorises :
-
-- `canonical` : composant/page stable, reutilisable par defaut et soumis au contrat complet.
-- `draft` : brouillon structure ou candidat de promotion, non reutilisable par defaut.
-- `sketch` : exploration experimentale, normalement stockee dans `dev/sketches/` avec un manifeste `sketch.json`.
-
-Compatibilite : dans `dev/components/`, l'absence de `status` vaut temporairement `canonical`. Les nouveaux composants doivent declarer `status: "canonical"`. Un `status: "sketch"` est interdit dans `dev/components/`.
 
 ## Relations JSON
 
@@ -108,6 +91,6 @@ Un contrôle `type: "array"` peut déclarer la forme humaine de chaque élément
 
 - Jusqu'ou autoriser la profondeur de composition avant de complexifier l'analyse ?
 - Faut-il stabiliser un schema JSON formel et versionne ?
-- Comment declarer clairement les variantes experimentales a l'interieur d'un composant canonique ?
+- Comment declarer clairement les variantes experimentales vs canoniques ?
 - Comment gerer un composant qui existe dans plusieurs projets avec variantes locales ?
 - Faut-il renommer les controles pour mieux separer design, contenu et comportement ?

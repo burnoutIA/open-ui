@@ -1,0 +1,135 @@
+// =============================================================================
+// Tokens — source unique des valeurs de design, en variables CSS sur :root
+// =============================================================================
+//
+// Deux couches :
+//   1. Palette : valeurs brutes (--color-blue-600). Jamais utilisée dans un composant.
+//   2. Rôles   : intentions UI (--color-text, --color-primary...). Les composants n'utilisent que celles-ci.
+//
+// Les noms suivent les conventions Tailwind v4 (--color-*, --font-*, --text-*, --radius-*...) :
+// le même vocabulaire sert en mode SCSS et en mode Tailwind.
+//
+// Paires de contraste garanties (vérifiées par scripts/tokens-contrast.test.js) :
+//   texte / surface, on-primary / primary, *-text / *-surface, border-strong / surface, focus / surface.
+// Changer une valeur de palette ou de rôle = changement transversal : relancer les tests.
+// =============================================================================
+
+:root {
+  // ── 1. Palette ─────────────────────────────────────────────────────────────
+  --color-white: #ffffff;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-900: #111827;
+
+  --color-blue-50: #eff6ff;
+  --color-blue-600: #2563eb;
+  --color-blue-700: #1d4ed8;
+
+  --color-green-50: #f0fdf4;
+  --color-green-700: #15803d;
+
+  --color-amber-50: #fffbeb;
+  --color-amber-700: #b45309;
+
+  --color-red-50: #fef2f2;
+  --color-red-600: #dc2626;
+  --color-red-700: #b91c1c;
+
+  // ── 2. Rôles ───────────────────────────────────────────────────────────────
+  // Texte et surfaces
+  --color-text: var(--color-gray-900);
+  --color-text-muted: var(--color-gray-600);
+  --color-surface: var(--color-white);
+  --color-surface-muted: var(--color-gray-100);
+  --color-surface-disabled: var(--color-gray-100);
+
+  // Bordures : decorative pour séparer, strong pour délimiter un contrôle (>= 3:1)
+  --color-border: var(--color-gray-200);
+  --color-border-strong: var(--color-gray-500);
+
+  // Action principale
+  --color-primary: var(--color-blue-600);
+  --color-primary-hover: var(--color-blue-700);
+  --color-on-primary: var(--color-white);
+
+  // Action destructive
+  --color-danger: var(--color-red-600);
+  --color-danger-hover: var(--color-red-700);
+  --color-on-danger: var(--color-white);
+
+  // Liens et focus
+  --color-link: var(--color-blue-600);
+  --color-link-hover: var(--color-blue-700);
+  --color-focus: var(--color-blue-600);
+
+  // Statuts : texte et bordure foncés sur surface claire
+  --color-info-text: var(--color-blue-700);
+  --color-info-surface: var(--color-blue-50);
+  --color-success-text: var(--color-green-700);
+  --color-success-surface: var(--color-green-50);
+  --color-warning-text: var(--color-amber-700);
+  --color-warning-surface: var(--color-amber-50);
+  --color-danger-text: var(--color-red-700);
+  --color-danger-surface: var(--color-red-50);
+
+  // ── Typographie ────────────────────────────────────────────────────────────
+  --font-heading: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, sfmono-regular, menlo, consolas, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.7;
+
+  // ── Espacements ────────────────────────────────────────────────────────────
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+
+  // ── Formes, ombres, mouvement ──────────────────────────────────────────────
+  --radius-sm: 0.125rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 5%);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%);
+
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+
+  // ── Mise en page ───────────────────────────────────────────────────────────
+  // Les points de rupture vivent dans _breakpoints.scss : une variable CSS ne peut pas servir dans @media.
+  --container-page: 75rem;
+  --gutter: var(--spacing-md);
+  --grid-gap: var(--spacing-md);
+
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-modal: 1050;
+  --z-tooltip: 1070;
+}

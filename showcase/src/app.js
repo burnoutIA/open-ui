@@ -2,6 +2,7 @@ import { SHOWCASE_API, SHOWCASE_MESSAGES, SHOWCASE_PREVIEW_SOURCE, SHOWCASE_SOUR
 import { getComponentDefaults, renderComposition, renderControls } from './controls.js'
 import { summarizeQualityReport } from './quality-state.js'
 import { isCurrentRender, normalizeRenderedHtml } from './render-state.js'
+import { highlightHtml } from './html-highlight.js'
 
 const LEVEL_ORDER = ['page', 'atom', 'molecule', 'organism', 'template']
 const LEVEL_LABELS = {
@@ -202,7 +203,7 @@ function selectEntry(entryKey, updateHash = true) {
 
   if (updateHash) history.replaceState(null, '', `#${encodeURIComponent(entry.key)}`)
 
-  elements.componentMeta.textContent = `${entry.type === 'page' ? 'page' : entry.level} · ${entry.category} · ${entry.id}`
+  elements.componentMeta.textContent = [entry.type === 'page' ? 'page' : entry.level, entry.category, entry.id].filter(Boolean).join(' · ')
   elements.componentTitle.textContent = entry.name
   elements.componentDescription.textContent = entry.description
   elements.previewFrame.title = `Prévisualisation de ${entry.type === 'page' ? 'la page' : 'du composant'} ${entry.name}`
@@ -318,7 +319,8 @@ function updateRenderedHtml(html) {
   state.renderedHtml = normalizeRenderedHtml(html)
   elements.htmlStatus.textContent = 'À jour'
   elements.htmlPre.setAttribute('aria-busy', 'false')
-  elements.htmlCode.textContent = state.renderedHtml || '<!-- Le rendu ne produit aucun HTML. -->'
+  if (state.renderedHtml) elements.htmlCode.innerHTML = highlightHtml(state.renderedHtml)
+  else elements.htmlCode.textContent = '<!-- Le rendu ne produit aucun HTML. -->'
   elements.copyHtml.disabled = !state.renderedHtml
   elements.copyHtmlStatus.textContent = ''
   elements.qualityButton.disabled = !state.renderedHtml
@@ -764,7 +766,8 @@ function handlePreviewMessage(event) {
   }
 
   if (event.data.type === SHOWCASE_MESSAGES.resize) {
-    const height = Math.max(448, Math.min(Number(event.data.height) || 448, 900))
+    // L'aperçu prend la hauteur de son contenu : c'est la zone canvas qui défile, pas l'iframe.
+    const height = Math.max(448, Number(event.data.height) || 448)
     elements.previewFrame.style.height = `${height}px`
   }
 }

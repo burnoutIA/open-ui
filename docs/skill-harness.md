@@ -46,6 +46,10 @@ Toutes les commandes restent canoniques dans `skill-src/commands/`. Pour les har
 
 Les harnais qui disposent d'un répertoire natif de commandes, comme OpenCode et Pi, reçoivent toujours la liste complète. Cette séparation évite de transformer chaque opération interne en métadonnée de skill chargée en permanence.
 
+## Prise en compte par l'agent
+
+Un harnais lit ses skills au démarrage d'une session : un `skills:build` fait pendant une session n'est pas vu par l'agent en cours. Après une génération, redémarrer la session (Claude Code, Codex, OpenCode, Pi...) pour qu'elle charge les nouvelles versions ; sinon l'agent applique les anciennes règles sans le signaler.
+
 ## Protection contre la divergence
 
 Chaque compilation écrit `.skill-harness/<target>.lock.json` avec les empreintes des fichiers générés. Le moteur :
@@ -66,5 +70,6 @@ Le test d'idempotence consiste à générer deux fois la même cible : la second
 2. Mettre à jour `skill-src/manifest.json` pour enregistrer le skill, ses commandes groupées, ses entrées `commandSkillEntrypoints` ou ses métadonnées d'interface.
 3. Générer uniquement la cible nécessaire.
 4. Exécuter `skills:check`, le validateur du format de skill et les tests du projet.
+5. Redémarrer la session de l'agent pour qu'il charge les skills régénérés.
 
 Les adaptateurs suivent les formats officiels : [skills Copilot](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills), [skills Claude Code](https://code.claude.com/docs/en/slash-commands), [skills et commandes OpenCode](https://opencode.ai/docs/skills), [skills Pi](https://pi.dev/docs/latest/skills) et [prompt templates Pi](https://pi.dev/docs/latest/prompt-templates).

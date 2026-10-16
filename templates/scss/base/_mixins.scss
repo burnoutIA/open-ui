@@ -1,45 +1,10 @@
 // =============================================================================
-// Mixins — Utilitaires réutilisables
+// Mixins — utilitaires réutilisables
 // =============================================================================
 
-@use 'variables' as *;
+@forward 'breakpoints';
 
-// Responsive — mobile first
-@mixin respond-to($breakpoint) {
-  @if $breakpoint == 'sm' {
-    @media (min-width: $breakpoint-sm) { @content; }
-  } @else if $breakpoint == 'md' {
-    @media (min-width: $breakpoint-md) { @content; }
-  } @else if $breakpoint == 'lg' {
-    @media (min-width: $breakpoint-lg) { @content; }
-  } @else if $breakpoint == 'xl' {
-    @media (min-width: $breakpoint-xl) { @content; }
-  } @else if $breakpoint == '2xl' {
-    @media (min-width: $breakpoint-2xl) { @content; }
-  }
-}
-
-// Flexbox helpers
-@mixin flex-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-@mixin flex-between {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-// Tronquer le texte
-@mixin truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-// Accessibilité — masquer visuellement mais garder accessible aux lecteurs d'écran
+// Masquer visuellement en gardant le contenu restitué par les lecteurs d'écran
 @mixin visually-hidden {
   position: absolute;
   width: 1px;
@@ -47,13 +12,20 @@
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
 }
 
-// Focus visible
+// Indicateur de focus clavier, contrasté sur toutes les surfaces du kit
 @mixin focus-ring {
-  outline: 2px solid $color-primary;
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
+}
+
+// Tronquer le texte sur une ligne
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

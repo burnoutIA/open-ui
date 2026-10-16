@@ -44,7 +44,7 @@ Creer est legitime dans deux cas :
 - nouveau composant canonique utile au design system ;
 - esquisse ou maquette exploratoire explicitement marquee comme telle.
 
-Un composant canonique doit avoir JSON, Twig, Markdown et SCSS si necessaire. Une esquisse peut etre plus libre, mais ne doit pas etre presentee comme composant stable.
+Un composant canonique doit avoir JSON, Twig, Markdown et les styles du mode configure (`docs/styling-*.md`). Une esquisse peut etre plus libre, mais ne doit pas etre presentee comme composant stable.
 
 ## Verifications minimales
 
@@ -53,8 +53,9 @@ Un composant canonique doit avoir JSON, Twig, Markdown et SCSS si necessaire. Un
 - `npm run graph:check`
 - `npm run list` si la cartographie doit etre relue
 - `npm run impact -- <component>` si un composant est touche
-- `npm run lint:scss` si SCSS touche
+- `npm run lint:scss` si SCSS touche (mode SCSS)
 - `npm run build` si rendu/imports/pages touches
+- `npm run snapshot -- <component>` (ou `page:<page>`) si une UI visible change : captures mobile/desktop, focus clavier, Axe
 
 ## Questions a resoudre
 

@@ -1,45 +1,43 @@
 // =============================================================================
-// Typographie — Styles de base des éléments texte
+// Typographie — styles de base des éléments texte
 // =============================================================================
 
-@use 'variables' as *;
-
-h1, h2, h3, h4, h5, h6 {
-  font-weight: $font-weight-bold;
-  line-height: $line-height-tight;
-  color: $color-gray-900;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+  text-wrap: balance;
 }
 
-h1 { font-size: $font-size-4xl; }
-h2 { font-size: $font-size-3xl; }
-h3 { font-size: $font-size-2xl; }
-h4 { font-size: $font-size-xl; }
-h5 { font-size: $font-size-lg; }
-h6 { font-size: $font-size-base; }
+h1 { font-size: var(--text-4xl); }
+h2 { font-size: var(--text-3xl); }
+h3 { font-size: var(--text-2xl); }
+h4 { font-size: var(--text-xl); }
+h5 { font-size: var(--text-lg); }
+h6 { font-size: var(--text-base); }
 
 p {
-  line-height: $line-height-relaxed;
-  color: $color-gray-700;
+  line-height: var(--leading-relaxed);
+  text-wrap: pretty;
 }
 
 small {
-  font-size: $font-size-sm;
+  font-size: var(--text-sm);
 }
 
 strong {
-  font-weight: $font-weight-bold;
-}
-
-em {
-  font-style: italic;
+  font-weight: var(--font-weight-bold);
 }
 
 code,
-pre {
-  font-family: $font-family-mono;
-  font-size: $font-size-sm;
-}
-
-a:hover {
-  text-decoration: underline;
+pre,
+kbd {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
 }

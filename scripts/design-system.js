@@ -1,11 +1,14 @@
 import fs from 'fs'
 import path from 'path'
 import { createHash } from 'crypto'
+import { loadOpenUIConfig } from './openui-config.js'
 
 export const ROOT = process.cwd()
 export const COMPONENTS_DIR = path.join(ROOT, 'dev/components')
 export const PAGES_DIR = path.join(ROOT, 'dev/pages')
-export const SCSS_DIR = path.join(ROOT, 'dev/assets/scss')
+export const OPENUI_CONFIG = loadOpenUIConfig(ROOT)
+// En SCSS, chaque composant a sa feuille à côté du point d'entrée ; en Tailwind, les styles vivent dans le Twig.
+export const SCSS_DIR = OPENUI_CONFIG.styling === 'scss' ? path.dirname(OPENUI_CONFIG.styleEntry) : null
 export const GRAPH_PATH = path.join(ROOT, '.openui/graph.json')
 export const DESIGN_SYSTEM_STATUSES = ['todo', 'in-progress', 'done']
 const SYSTEM_DEPENDENCIES = new Set(['grid'])
@@ -40,7 +43,8 @@ export function getComponentEntries() {
       jsonPath,
       twigPath: path.join(dir, `${id}.twig`),
       mdPath: path.join(dir, `${id}.md`),
-      scssPath: path.join(SCSS_DIR, 'components', `_${id}.scss`),
+      jsPath: path.join(dir, `${id}.js`),
+      scssPath: SCSS_DIR && path.join(SCSS_DIR, 'components', `_${id}.scss`),
       schema: readJson(jsonPath)
     }
   })
@@ -56,7 +60,7 @@ export function getPageEntries() {
       jsonPath,
       twigPath: path.join(dir, `${id}.twig`),
       mdPath: path.join(dir, `${id}.md`),
-      scssPath: path.join(SCSS_DIR, 'components', `_${id}-page.scss`),
+      scssPath: SCSS_DIR && path.join(SCSS_DIR, 'components', `_${id}-page.scss`),
       schema: readJson(jsonPath)
     }
   })
@@ -93,12 +97,21 @@ export function collectRefs(schema) {
   return [...refs].sort()
 }
 
-export function collectTwigIncludes(twigPath) {
-  if (!fs.existsSync(twigPath)) return []
-  const content = fs.readFileSync(twigPath, 'utf8')
+// Composants utilisés par un Twig, en suivant les gabarits et fragments (extends, embed, include hors composant) :
+// une page qui étend dev/layouts/base.twig utilise aussi le header et le footer du gabarit.
+export function collectTwigIncludes(twigPath, visited = new Set()) {
+  const resolved = path.resolve(twigPath)
+  if (visited.has(resolved) || !fs.existsSync(resolved)) return []
+  visited.add(resolved)
+
+  const content = fs.readFileSync(resolved, 'utf8')
   const refs = new Set()
-  const includeRe = /include\s+['"]dev\/components\/([^/]+)\/[^'"]+['"]/g
-  for (const match of content.matchAll(includeRe)) refs.add(match[1])
+  const templateRe = /\b(?:include|extends|embed|import|from)\s+['"]([^'"]+\.twig)['"]/g
+  for (const [, template] of content.matchAll(templateRe)) {
+    const component = template.match(/^dev\/components\/([^/]+)\//)
+    if (component) refs.add(component[1])
+    else for (const ref of collectTwigIncludes(path.join(ROOT, template), visited)) refs.add(ref)
+  }
   return [...refs].sort()
 }
 

@@ -1,0 +1,25 @@
+// =============================================================================
+// Points de rupture — mobile first
+// =============================================================================
+//
+// Seule valeur restée en Sass : les media queries ne lisent pas les variables CSS.
+// Mêmes paliers que Tailwind v4 (--breakpoint-*).
+
+@use 'sass:map';
+
+$breakpoints: (
+  'sm': 40rem,
+  'md': 48rem,
+  'lg': 64rem,
+  'xl': 80rem
+);
+
+@mixin respond-to($name) {
+  @if not map.has-key($breakpoints, $name) {
+    @error "Point de rupture inconnu : #{$name}. Attendu : #{map.keys($breakpoints)}";
+  }
+
+  @media (min-width: map.get($breakpoints, $name)) {
+    @content;
+  }
+}

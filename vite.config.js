@@ -1,34 +1,32 @@
 import fs from 'fs'
 import path from 'path'
 import { defineConfig } from 'vite'
-import Twig from 'twig'
 import { SHOWCASE_API } from './showcase/shared/protocol.js'
 import { getShowcaseCatalog, getShowcaseEntry, normalizeShowcaseProps } from './showcase/server/catalog.js'
 import { readJsonBody, sendJson } from './showcase/server/http.js'
-import { createProjectStylesheetSource } from './showcase/server/project-style.js'
+import { EMPTY_PROJECT_SCRIPT, EMPTY_PROJECT_STYLESHEET } from './showcase/server/project-style.js'
 import { validateHtmlWithW3c } from './showcase/server/html-validator.js'
+import { loadOpenUIConfig } from './scripts/openui-config.js'
+import { renderTwig as renderTwigFile } from './scripts/twig-renderer.js'
 
 const ROOT = process.cwd()
+const CONFIG = loadOpenUIConfig(ROOT)
 const PAGES_DIR = path.join(ROOT, 'dev/pages')
 const SKETCHES_DIR = path.join(ROOT, 'dev/sketches')
 const SHOWCASE_DIR = path.join(ROOT, 'showcase')
-const PROJECT_STYLESHEET = path.join(ROOT, 'dev/assets/scss/style.scss')
+const PROJECT_STYLESHEET = CONFIG.styleEntry
 const OUT_DIR = path.join(ROOT, 'public')
 const PUBLIC_SKETCHES_DIR = path.join(OUT_DIR, 'sketches')
 const FULL_RELOAD_DELAY = 150
-const PROJECT_STYLESHEET_ID = 'virtual:openui-project-styles.scss'
-const RESOLVED_PROJECT_STYLESHEET_ID = `\0${PROJECT_STYLESHEET_ID}`
+const PROJECT_STYLESHEET_ID = 'virtual:openui-project-styles'
+// L'extension du module résolu choisit le pipeline Vite : Sass ou CSS (Tailwind).
+const RESOLVED_PROJECT_STYLESHEET_ID = `\0${PROJECT_STYLESHEET_ID}.${CONFIG.styling === 'tailwind' ? 'css' : 'scss'}`
+const PROJECT_SCRIPT = CONFIG.scriptEntry
+const PROJECT_SCRIPT_ID = 'virtual:openui-project-scripts'
+const RESOLVED_PROJECT_SCRIPT_ID = `\0${PROJECT_SCRIPT_ID}.js`
 
-// Les includes utilisent des chemins depuis la racine ('dev/components/...')
-// settings.views = ROOT indique à twig 3.x d'utiliser ROOT comme base de résolution.
 function renderTwig(filePath, data = {}) {
-  return new Promise((resolve, reject) => {
-    Twig.cache(false)
-    Twig.renderFile(filePath, { ...data, settings: { views: ROOT } }, (err, html) => {
-      if (err) reject(err)
-      else resolve(html)
-    })
-  })
+  return renderTwigFile(ROOT, filePath, data)
 }
 
 function copySketchesToPublic() {
@@ -141,14 +139,20 @@ function openUIPlugin() {
   return {
     name: 'openui',
 
+    // Le vrai fichier quand il existe : Vite y applique Sass ou Tailwind et résout les url() relatives
+    // (polices, images). Sinon, une feuille vide virtuelle pour un workspace qui démarre.
     resolveId(id) {
-      if (id === PROJECT_STYLESHEET_ID) return RESOLVED_PROJECT_STYLESHEET_ID
+      if (id === PROJECT_STYLESHEET_ID) {
+        return fs.existsSync(PROJECT_STYLESHEET) ? PROJECT_STYLESHEET : RESOLVED_PROJECT_STYLESHEET_ID
+      }
+      if (id === PROJECT_SCRIPT_ID) {
+        return fs.existsSync(PROJECT_SCRIPT) ? PROJECT_SCRIPT : RESOLVED_PROJECT_SCRIPT_ID
+      }
     },
 
     load(id) {
-      if (id !== RESOLVED_PROJECT_STYLESHEET_ID) return
-      if (fs.existsSync(PROJECT_STYLESHEET)) this.addWatchFile(PROJECT_STYLESHEET)
-      return createProjectStylesheetSource(PROJECT_STYLESHEET)
+      if (id === RESOLVED_PROJECT_STYLESHEET_ID) return EMPTY_PROJECT_STYLESHEET
+      if (id === RESOLVED_PROJECT_SCRIPT_ID) return EMPTY_PROJECT_SCRIPT
     },
 
     // Build : rend chaque page Twig → HTML temporaire, passé à Rollup comme entrée
@@ -189,6 +193,25 @@ function openUIPlugin() {
 
     // Dev : rendu Twig à la volée + preview des esquisses hors DS canonique
     configureServer(server) {
+      // Création ou suppression d'un point d'entrée (styles ou scripts) : ses importeurs doivent le résoudre à nouveau.
+      const entryIds = {
+        [PROJECT_STYLESHEET]: [RESOLVED_PROJECT_STYLESHEET_ID, PROJECT_STYLESHEET],
+        [PROJECT_SCRIPT]: [RESOLVED_PROJECT_SCRIPT_ID, PROJECT_SCRIPT]
+      }
+      const onEntryPresenceChange = (file) => {
+        const ids = entryIds[path.resolve(file)]
+        if (!ids) return
+        for (const id of ids) {
+          const module = server.moduleGraph.getModuleById(id)
+          if (!module) continue
+          for (const importer of module.importers) server.moduleGraph.invalidateModule(importer)
+          server.moduleGraph.invalidateModule(module)
+        }
+        server.ws.send({ type: 'full-reload' })
+      }
+      server.watcher.on('add', onEntryPresenceChange)
+      server.watcher.on('unlink', onEntryPresenceChange)
+
       server.middlewares.use(async (req, res, next) => {
         const pathname = new URL(req.url, 'http://localhost').pathname
 
@@ -315,9 +338,11 @@ function openUIPlugin() {
       const isProjectStylesheet = path.resolve(file) === PROJECT_STYLESHEET
 
       if (isProjectContract || isSketch || isProjectStylesheet) {
-        if (isProjectStylesheet) {
-          const stylesheetModule = server.moduleGraph.getModuleById(RESOLVED_PROJECT_STYLESHEET_ID)
-          if (stylesheetModule) server.moduleGraph.invalidateModule(stylesheetModule)
+        // En Tailwind, un Twig modifié peut introduire de nouvelles classes : la feuille doit être régénérée.
+        if (isProjectStylesheet || (CONFIG.styling === 'tailwind' && isProjectContract)) {
+          for (const module of server.moduleGraph.getModulesByFile(PROJECT_STYLESHEET) ?? []) {
+            server.moduleGraph.invalidateModule(module)
+          }
         }
         clearTimeout(fullReloadTimer)
         fullReloadTimer = setTimeout(() => {
@@ -329,10 +354,17 @@ function openUIPlugin() {
   }
 }
 
-export default defineConfig({
+// Tailwind n'est chargé qu'en mode tailwind : le mode SCSS ne paie pas son coût.
+async function stylingPlugins() {
+  if (CONFIG.styling !== 'tailwind') return []
+  const { default: tailwindcss } = await import('@tailwindcss/vite')
+  return [tailwindcss()]
+}
+
+export default defineConfig(async () => ({
   // Le rendu public doit rester portable, y compris ouvert directement en file://.
   base: './',
-  plugins: [openUIPlugin()],
+  plugins: [openUIPlugin(), ...(await stylingPlugins())],
   server: {
     port: 3000,
     watch: {
@@ -355,4 +387,4 @@ export default defineConfig({
     outDir: 'public',
     emptyOutDir: true
   }
-})
+}))

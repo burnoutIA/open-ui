@@ -11,3 +11,4 @@ dev/*
 .openui/graph.json
 .claude/*
 .skill-harness/claude.lock.json
+.openui/snapshots/

@@ -2,97 +2,67 @@
 
 ## Intention
 
-Les tokens garantissent la coherence visuelle d'Open UI. Ils doivent permettre de modifier l'apparence globale sans casser les composants ni introduire des styles ponctuels incoherents.
+Les tokens sont l'etape 1 du design system : ils sont poses avant le premier atome. Ils garantissent la coherence visuelle et permettent de changer l'apparence globale sans toucher aux composants.
 
-## Contrat
+Un kit de depart Open UI fournit au minimum : couleurs (palette + roles), deux polices (titres et texte), echelles de texte et d'espacement, rayons, ombres, durees, et une mise en page 12 colonnes responsive (conteneur, gouttieres, grille).
 
-- Les tokens SCSS vivent principalement dans `dev/assets/scss/base/_variables.scss`.
-- Les composants doivent utiliser les tokens existants avant d'introduire des valeurs locales.
-- Les styles inline sont interdits dans les templates Twig.
-- Toute nouvelle valeur repetee doit etre candidate a un token.
-- Modifier un token est un changement transversal et doit etre annonce comme tel.
+## Format
 
-## Couches de tokens
+Les tokens sont des variables CSS sur `:root`, avec des noms alignes sur Tailwind v4 (`--color-*`, `--font-*`, `--text-*`, `--spacing-*`, `--radius-*`, `--shadow-*`). Le meme vocabulaire sert dans les deux modes :
 
-Open UI distingue trois couches pour garder le systeme pilotable sans changer la palette a chaque projet.
+| Mode | Fichier source | Usage dans un composant |
+|------|----------------|-------------------------|
+| SCSS | `dev/assets/scss/base/_tokens.scss` | `var(--color-primary)` |
+| Tailwind | bloc `@theme` du point d'entree | `bg-primary`, `text-on-primary` |
 
-### Core tokens
+Exception : les points de rupture restent en Sass (`_breakpoints.scss`) en mode SCSS, car une variable CSS ne peut pas servir dans une media query. Memes paliers que Tailwind : `sm` 40rem, `md` 48rem, `lg` 64rem, `xl` 80rem.
 
-Les core tokens sont les primitives brutes : couleurs, echelles de spacing, rayons, typographie, ombres, breakpoints et z-index. Ils peuvent rester proches des variables actuelles (`$color-primary`, `$spacing-md`, `$radius-lg`) et servent de socle de compatibilite.
+## Deux couches de couleurs
 
-### Semantic tokens
+1. **Palette** : valeurs brutes (`--color-blue-600`). Elle n'est jamais utilisee directement dans un composant.
+2. **Roles** : intentions UI qui pointent vers la palette (`--color-primary: var(--color-blue-600)`). Les composants n'utilisent que les roles.
 
-Les semantic tokens portent une intention UI transversale : surface, texte, bordure, action, focus, danger, succes, warning. Les composants devraient consommer ces roles en priorite plutot que des couleurs directes.
+Roles du kit :
 
-Exemples cibles :
+| Famille | Roles |
+|---------|-------|
+| Texte, surfaces | `text`, `text-muted`, `surface`, `surface-muted`, `surface-disabled` |
+| Bordures | `border` (separation decorative), `border-strong` (contour de controle, >= 3:1) |
+| Actions | `primary`, `primary-hover`, `on-primary`, `danger`, `danger-hover`, `on-danger` |
+| Liens, focus | `link`, `link-hover`, `focus` |
+| Statuts | `{info,success,warning,danger}-text` et `{...}-surface` |
 
-```scss
-$semantic-surface-page: $color-gray-50;
-$semantic-surface-default: $color-white;
-$semantic-text-primary: $color-gray-900;
-$semantic-text-secondary: $color-gray-600;
-$semantic-border-subtle: $color-gray-200;
-$semantic-action-primary-bg: $color-primary;
-$semantic-action-primary-text: $color-white;
-$semantic-focus-ring-color: $color-primary;
-```
+Changer l'identite d'un projet = modifier la palette ou rebrancher un role, sans toucher aux composants. Ajouter un role quand un besoin d'intention apparait, pas pour un cas isole.
 
-### Project tokens
+## Contrastes garantis
 
-Les project tokens adaptent une direction ou un projet sans modifier les composants canoniques : brand, largeur de contenu, densite, surfaces de page, accent local. Ils peuvent pointer vers les semantic tokens par defaut.
+Les paires de roles sont verifiees par `scripts/tokens-contrast.js` : texte/surface, `on-*`/action, `*-text`/`*-surface`, lien, bordure de controle et focus (4.5:1 pour le texte, 3:1 pour les contours et le focus).
 
-Exemples cibles :
+- `npm run health` controle les tokens du projet ;
+- `npm test` controle les kits de `templates/`.
 
-```scss
-$project-color-brand: $semantic-action-primary-bg;
-$project-content-max-width: 75rem;
-$project-page-padding-x: $spacing-lg;
-```
-
-## Types de tokens attendus
-
-- couleurs primitives et roles semantiques ;
-- espacements et densites ;
-- rayons ;
-- typographie ;
-- ombres ;
-- breakpoints ;
-- z-index si necessaire.
+Un role qui echoue bloque `health` : corriger la palette plutot que contourner dans un composant.
 
 ## Regles d'usage
 
-- Preferer `$spacing-*` aux valeurs arbitraires.
-- Preferer un semantic token (`$semantic-*`) a une couleur primitive dans les composants.
-- Preferer `$color-*` aux hexadecimaux locaux si aucun semantic token n'existe encore.
-- Preferer `$radius-*` aux rayons fixes locaux.
-- Un composant peut avoir une exception locale seulement si elle est justifiee par son usage.
-- Une exception repetee doit devenir un token, un semantic token ou une variante.
-- Les changements de palette restent separes de la migration vers des tokens semantiques : on peut introduire les roles sans changer le rendu.
+- Un composant n'utilise que des roles et des echelles (`--spacing-*`, `--text-*`, `--radius-*`...).
+- Pas de valeur hexadecimale ni de couleur de palette dans un composant.
+- Une exception locale doit etre justifiee par l'usage et documentee ; une exception repetee devient un token ou une variante.
+- Les styles inline sont interdits dans les templates Twig.
 
 ## Impact token
 
-Avant de modifier un token, l'agent doit chercher les composants qui l'utilisent et prevenir l'utilisateur de l'impact probable.
-
-Sortie attendue :
+Modifier un token est un changement transversal. Avant, l'agent cherche ses usages (nom de variable dans `dev/assets`, et dans les Twig en mode Tailwind) et previent l'utilisateur.
 
 ```text
-Token touche: $spacing-lg
-Composants probablement impactes: card, footer, form controls
-Risque: densite verticale changee sur plusieurs pages
+Token touche: --color-primary
+Composants probablement impactes: button, link, focus de tous les controles
+Risque: contraste du texte des boutons principaux ; relancer npm run health
 ```
-
-## Migration progressive
-
-1. Garder les variables actuelles comme compatibilite.
-2. Ajouter des alias semantic tokens sans changer la palette.
-3. Migrer d'abord les composants a fort effet de levier : `button`, formulaires, `card`, theme.
-4. Ajouter un audit non bloquant des valeurs magiques dans les SCSS composants/pages.
-5. Rendre progressivement les nouveaux composants dependants des semantic tokens plutot que des primitives.
 
 ## Questions a resoudre
 
 - Faut-il generer un index tokens -> composants ?
-- Faut-il migrer les tokens SCSS vers un format source JSON partageable ?
+- Faut-il un theme sombre (second jeu de roles sous `[data-theme="dark"]`) dans le kit ?
 - Comment representer les tokens par projet quand Open UI gerera plusieurs projets ?
 - Comment detecter automatiquement les valeurs hardcodees qui devraient devenir des tokens ?
-- Faut-il exposer les tokens comme controles editables ou les garder comme couche systeme ?

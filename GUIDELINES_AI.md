@@ -1,8 +1,9 @@
 # GUIDELINES_AI.md - Open UI
 
-> Document universel. Toute IA qui lit ce fichier doit pouvoir creer un composant conforme sans autre explication.
+> Regles minimales pour qu'un agent cree un composant ou une page conforme. Le reste se lit a la demande dans `docs/` :
+> styles du mode configure (`styling-scss.md` ou `styling-tailwind.md`), tokens (`design-tokens.md`), composition JSON avancee (`component-composition.md`), impact, workflow, esquisses.
 >
-> Les contrats detailles du projet vivent aussi dans `docs/` : modele composant, analyse d'impact, workflow agent, tokens, multi-projets et esquisses.
+> Twig sert a travailler de maniere atomique (includes, gabarits). Le livrable est le HTML et les assets statiques generes par `npm run build`, pas le Twig.
 
 ---
 
@@ -10,709 +11,183 @@
 
 | Niveau | `level` JSON | Emplacement | Description |
 |--------|--------------|-------------|-------------|
-| **Atom** | `"atom"` | `dev/components/[nom]/` | Element UI indivisible : bouton, input, badge, icone, label |
-| **Molecule** | `"molecule"` | `dev/components/[nom]/` | Composition d'atoms : champ de formulaire, carte, tag group |
-| **Organism** | `"organism"` | `dev/components/[nom]/` | Composition de molecules : header, formulaire complet, nav |
-| **Template** | `"template"` | `dev/components/[nom]/` | Structure de page avec zones de contenu, sans contenu reel |
-| **Page** | `"page"` ou page JSON sans `level` | `dev/pages/` | Instance d'un template avec contenu reel. JSON optionnel pour exposer des controles dans l’espace de travail. |
+| **Atom** | `"atom"` | `dev/components/[nom]/` | Element indivisible : bouton, lien, badge |
+| **Molecule** | `"molecule"` | `dev/components/[nom]/` | Petit assemblage : champ de formulaire complet, carte |
+| **Organism** | `"organism"` | `dev/components/[nom]/` | Bloc fonctionnel : header, footer, formulaire |
+| **Template** | - | `dev/layouts/[nom].twig` | Gabarit de page : document, header, footer et blocs a remplir ; hors catalogue |
+| **Page** | - | `dev/pages/[nom].json` + `.twig` | Contenu reel ; etend un gabarit (`{% extends %}`) |
 
-Regle fondamentale : la composition est toujours descendante. Un atom n'inclut jamais une molecule. Un organism n'inclut jamais un template.
+La composition est toujours descendante : un atom n'inclut jamais une molecule, un organism n'inclut jamais un gabarit.
+
+Les donnees partagees par toutes les pages (nom du site, navigation, liens legaux) vivent dans `dev/data/site.json` et sont disponibles dans tout Twig sous `site`.
 
 ---
 
 ## 2. Structure d'un composant
 
-Chaque composant `[nom]` en `kebab-case` vit dans `dev/components/` :
-
 ```text
 dev/components/[nom]/
-|- [nom].json   <- Source de verite : metadonnees + controles de l’espace de travail
-|- [nom].twig   <- Template de rendu
-`- [nom].md     <- Documentation obligatoire
+|- [nom].json   <- source de verite : metadonnees, controles et valeurs par defaut
+|- [nom].twig   <- rendu
+|- [nom].md     <- documentation obligatoire
+`- [nom].js     <- comportement, seulement si le composant est interactif
 ```
 
-Structure imposee pour `[nom].md` :
+Styles : selon le mode de `openui.config.json` (section 5).
 
-```markdown
-# [Nom du composant]
+Script (`[nom].js`), s'il en faut un :
+- module ES sans export ni initialisation : delegation d'evenements sur `document`, donc actif sur une page comme dans le Showcase
+- cible ses elements par des attributs `data-[nom]-*`, jamais par ses classes de style
+- amelioration progressive : sans JavaScript, le contenu reste accessible
+- importe dans le point d'entree JS (`scriptEntry`, par defaut `dev/assets/js/main.js`) : `import '../../components/[nom]/[nom].js'` ; `npm run health` signale un oubli
 
-## Usage
-[Quand et pourquoi utiliser ce composant.]
-
-## Props
-
-| Prop | Type | Defaut | Description |
-|------|------|--------|-------------|
-| `prop` | `string` | `'valeur'` | Description de la prop |
-
-## Accessibilite
-[Attributs ARIA, comportement clavier, points d'attention.]
-
-## Responsive
-[Ajouter cette section si le composant a une reorganisation, une contrainte de contenu ou un comportement responsive non evident.]
-
-## Exemples
-
-### Exemple de base
-```twig
-{% include 'dev/components/[nom]/[nom].twig' with {
-  prop: 'valeur'
-} %}
-```
-
-### Variante [nom]
-```twig
-{% include 'dev/components/[nom]/[nom].twig' with {
-  variant: 'nom-variante'
-} %}
-```
-```
-
-SCSS associe :
-
-```text
-dev/assets/scss/components/_[nom].scss
-```
-
-A importer manuellement dans `dev/assets/scss/style.scss`.
+Structure imposee pour `[nom].md` : `# Nom`, puis `## Usage`, `## Props` (tableau `Prop | Type | Defaut | Description`), `## Accessibilite` (ce que le composant garantit, ce que le consommateur doit fournir), `## Responsive` si le comportement n'est pas evident, `## Exemples` (includes Twig).
 
 ---
 
-## 3. JSON d'un composant - structure complete
-
-Exemple minimal valide :
+## 3. JSON d'un composant
 
 ```json
 {
   "name": "Button",
   "status": "in-progress",
   "level": "atom",
-  "category": "Forms",
-  "description": "Element d'action interactif.",
+  "category": "Actions",
+  "description": "Declenche une action.",
   "variants": {
-    "variant": {
-      "label": "Variante",
-      "type": "select",
-      "default": "primary",
-      "options": ["primary", "secondary", "outline"]
-    }
+    "variant": { "label": "Variante", "type": "select", "default": "primary", "options": ["primary", "secondary"] }
   },
   "content": {
-    "text": {
-      "label": "Texte",
-      "type": "text",
-      "default": "Cliquez ici"
-    }
-  },
-  "parts": {},
-  "collections": {}
-}
-```
-
-Champs obligatoires :
-- `name`
-- `level` pour les composants dans `dev/components/`
-- `category`
-- `description`
-
-Statut de travail :
-- `status` accepte `todo`, `in-progress` ou `done`
-- l'absence de `status` vaut `done` pour compatibilite
-- declarer `in-progress` des le debut d'une creation ou refonte, puis `done` seulement apres validation, verification visuelle, responsive et accessibilite pertinentes
-- `.openui/graph.json` agrege les statuts et les relations ; ne pas l'editer a la main
-
-Types de controles disponibles :
-- `select` -> `{ type, label, default, options: [] }`
-- `checkbox` -> `{ type, label, default: boolean }`
-- `text` -> `{ type, label, default: string }`
-- `color` -> `{ type, label, default: "#hexcode" }`
-- `number` -> `{ type, label, default: number }`
-
-Semantique :
-- `variants` = apparence, etats, options visuelles
-- `content` = texte, libelles, contenu editorial ou donnees affichees
-
-### JSON v2 : `parts`
-
-`parts` reference un sous-composant unique editable sans dupliquer son JSON canonique.
-
-```json
-{
-  "parts": {
-    "cta": {
-      "label": "CTA",
-      "component": "button",
-      "mode": "single",
-      "autoBind": true
-    }
+    "text": { "label": "Texte", "type": "text", "default": "Enregistrer" }
   }
 }
 ```
 
-Champs supportes :
-- `label` : libelle affiche dans l’inspecteur agentique
-- `component` : id du composant canonique reference
-- `mode` : `single` uniquement pour l'instant
-- `binding` : mapping explicite enfant -> parent
-- `autoBind` : mapping automatique par convention de nommage
-- `exclude` : retire certains champs de l'autobind
-- `defaults` : valeurs locales figees ou initialisees
+- Obligatoires : `name`, `level`, `category`, `description`.
+- `status` : `todo`, `in-progress` ou `done` (absent = `done`). Passer a `in-progress` des le debut d'un travail, a `done` seulement apres les verifications de la section 8.
+- `variants` = apparence et etats ; `content` = textes et donnees.
+- Types de controles : `select` (avec `options`), `checkbox`, `text`, `number`, `color`, `array` (liste avec `item.fields`, voir `docs/component-model.md`).
 
-### JSON v2 : `collections`
+Valeurs par defaut :
+- le `default` du JSON est la **seule** source : le moteur l'injecte dans le Twig quand la prop n'est pas passee, y compris pour un composant inclus depuis une page ;
+- c'est la vraie valeur par defaut du composant, pas un contenu de demonstration : un texte d'aide ou un `autocomplete` par defaut s'appliquerait a chaque usage ;
+- une valeur passee, meme `''` ou `false`, est respectee ;
+- ne pas repeter le defaut dans le Twig ; un `{% set %}` ne sert qu'aux valeurs derivees (`{% set name = name is empty ? id : name %}`).
 
-`collections` modelise une structure repetitive. Le comportement bulk ne doit pas etre deduit automatiquement: il doit etre annonce explicitement comme une vraie liste.
-
-```json
-{
-  "collections": {
-    "articles": {
-      "label": "Cards listing",
-      "kind": "list",
-      "itemComponent": "card",
-      "mode": "bulk",
-      "autoBind": true,
-      "exclude": {
-        "variants": ["horizontal"],
-        "content": ["title", "text"]
-      }
-    }
-  }
-}
-```
-
-Champs supportes :
-- `label` : libelle affiche dans l’inspecteur agentique
-- `kind` : type semantique de repetition. Utiliser `list` pour une vraie liste editable en bulk
-- `itemComponent` : composant canonique de chaque item
-- `mode` : `bulk` uniquement pour l'instant
-- `binding` / `autoBind` / `exclude` : meme logique que pour `parts`
-
-### Regle de bulk explicite
-
-- une repetition de composants n'est pas automatiquement une liste
-- pour ouvrir un vrai tiroir bulk de famille, le JSON doit declarer explicitement `kind: "list"`
-- sans `kind: "list"`, une repetition doit etre modelisee autrement : instances individuelles, groupes de layout, ou autre structure plus fine
-- cas typique de `list` : liste de `card`, listing d'articles, grille de produits, menu repetitif
-- cas non-`list` typique : page de formulaire avec plusieurs `input`, `checkbox`, `switch`, ou `button`
-
-### Regle de source de verite
-
-- Le composant enfant reste defini dans son propre JSON canonique.
-- Le parent ne copie jamais le schema complet de l'enfant.
-- Le parent expose seulement les champs plats necessaires pour piloter l'enfant.
-
-### Convention `autoBind`
-
-Quand `autoBind: true`, le moteur cherche automatiquement les champs parent via une convention plate :
-
-- prefixe = identifiant du `part` ou de la `collection`
-- suffixe = nom du champ enfant avec premiere lettre capitalisee
-
-Exemples :
-- `parts.cta` + `button.variant` -> `ctaVariant`
-- `parts.cta` + `button.text` -> `ctaText`
-- `parts.header` + `header-nav.ctaSize` -> `headerCtaSize`
-- `parts.footer` + `footer.copyright` -> `footerCopyright`
-- `collections.articles` + `card.hasImage` -> `articlesHasImage` si ce champ existe
-
-### Quand utiliser `binding`
-
-Utiliser un `binding` explicite si :
-- le parent ne suit pas la convention `autoBind`
-- le parent doit re-utiliser un champ deja existant
-- le parent doit adapter une semantique specifique
-
-Exemple :
-
-```json
-{
-  "parts": {
-    "cta": {
-      "label": "CTA",
-      "component": "button",
-      "mode": "single",
-      "binding": {
-        "variants": {
-          "variant": "primaryActionVariant"
-        },
-        "content": {
-          "text": "primaryActionLabel"
-        }
-      }
-    }
-  }
-}
-```
-
-### Quand utiliser `exclude`
-
-Utiliser `exclude` pour ne pas exposer automatiquement certains champs enfant.
-
-Cas typiques :
-- une collection de `card` ne doit pas bulk-editer `title` ou `text`
-- un parent veut figer `horizontal`
-- un champ existe techniquement mais n'a pas d'interet produit dans l’inspecteur agentique
-
-### Regles d'usage JSON v2
-
-- `parts` pour un sous-composant unique : CTA, header, footer, media block
-- `collections` uniquement pour une repetition explicitement declaree, idealement avec `kind: "list"`
-- une repetition visuelle seule ne suffit pas pour declarer une `collection`
-- les vraies listes (`kind: "list"`) sont editees en bulk par defaut
-- ne pas introduire de recursivite arbitrairement profonde sans besoin valide
-
-### JSON v2+ : repetition non-`list`
-
-Quand une page repete plusieurs composants sans etre une vraie liste editoriale, ne pas utiliser `collections`.
-Utiliser a la place trois noeuds complementaires :
-
-- `families` : reglage partage par type de composant repete
-- `instances` : occurrence individuelle editable
-- `layoutGroups` : structure de placement et de grille
-
-Cas typique :
-- page formulaire avec plusieurs `input`, `select`, `switch`, `checkbox`, `button`
-- chaque champ garde son propre texte, son aide, son required, etc.
-- plusieurs champs partagent quand meme un style commun
-- les lignes et colonnes doivent rester pilotables explicitement
-
-Exemple :
-
-```json
-{
-  "families": {
-    "inputs": {
-      "label": "Inputs",
-      "component": "input",
-      "mode": "shared",
-      "autoBind": true,
-      "exclude": {
-        "content": ["label", "placeholder", "helpText", "errorMessage"]
-      }
-    }
-  },
-  "instances": {
-    "firstName": {
-      "label": "Prenom",
-      "component": "input",
-      "family": "inputs",
-      "mode": "single",
-      "defaults": {
-        "variants": {
-          "type": "text",
-          "required": true
-        },
-        "content": {
-          "label": "Prenom",
-          "placeholder": "ex : Jean"
-        }
-      }
-    }
-  },
-  "layoutGroups": {
-    "personalRow1": {
-      "label": "Informations personnelles - ligne 1",
-      "component": "grid",
-      "mode": "layout",
-      "children": ["firstName", "lastName"],
-      "defaults": {
-        "variants": {
-          "cols": "1",
-          "gap": "lg"
-        }
-      }
-    }
-  }
-}
-```
-
-### Semantique `families`
-
-`families` sert a piloter les reglages communs d'un type de composant repete.
-
-Champs recommandes :
-- `label`
-- `component` : composant canonique partage par la famille
-- `mode` : `shared`
-- `binding` / `autoBind` / `exclude`
-- `defaults`
-
-Usage recommande :
-- variantes visuelles partagees
-- options fonctionnelles communes si elles ont un vrai sens produit
-
-Usage deconseille :
-- texte, placeholder, aide, options editoriales propres a chaque instance
-
-### Semantique `instances`
-
-`instances` represente une occurrence concrete editable individuellement.
-
-Champs recommandes :
-- `label`
-- `component`
-- `family` : optionnel, rattache l'instance a une famille partagee
-- `mode` : `single`
-- `binding` / `autoBind`
-- `defaults`
-
-Usage recommande :
-- labels
-- placeholders
-- help text
-- required
-- options d'un select
-- texte specifique d'un bouton
-
-### Semantique `layoutGroups`
-
-`layoutGroups` represente le placement et la structure de composition.
-
-Champs recommandes :
-- `label`
-- `component` : typiquement `grid`
-- `mode` : `layout`
-- `children` : ids d'`instances` ou de `parts`
-- `binding` / `autoBind`
-- `defaults`
-
-Usage recommande :
-- lignes de formulaire
-- groupes 2 colonnes / 3 colonnes
-- zones de placement explicites
-
-### Regles d'usage pour repetition non-`list`
-
-- une repetition non-editoriale ne devient pas une `collection`
-- utiliser `families` pour le style partage
-- utiliser `instances` pour le contenu propre a chaque occurrence
-- utiliser `layoutGroups` pour les lignes, grilles et regroupements
-- une meme page peut combiner `parts`, `collections`, `families`, `instances`, et `layoutGroups`
-- `collections` reste reserve aux vraies listes avec `kind: "list"`
+Relations : un `include` Twig suffit, le graphe le detecte (`npm run impact [nom]`). Declarer une composition dans le JSON (`parts`, `collections`...) est facultatif : voir `docs/component-composition.md`.
 
 ---
 
-## 4. Template Twig - regles
+## 4. Twig
 
-Regles absolues :
-- `|default()` obligatoire sur chaque variable exposee
-- pas de logique metier, uniquement de l'affichage
-- BEM strict pour les classes : `.block__element--modifier`
+- uniquement de l'affichage, pas de logique metier ; les tables de classes de variantes (mode Tailwind) sont autorisees
+- `include` toujours avec `with { ... } only` : le composant ne recoit que ce qu'on lui passe, le reste vient de ses defauts JSON (twig.js exige `with {} only`, meme vide)
+- classes selon le mode de style : BEM en SCSS, tables d'utilitaires en Tailwind
 - pas de styles inline
-- accessibilite integree des la conception
-
-Exemple atom :
+- HTML copiable : le Showcase reformate le HTML affiche et copie. Seule regle d'espaces : pas de blanc au bord d'un element en ligne (`<a href="/">Accueil</a>`, pas `<a href="/">\n  Accueil\n</a>`)
 
 ```twig
-{% set variant  = variant|default('primary') %}
-{% set size     = size|default('md') %}
-{% set full     = full|default(false) %}
-{% set disabled = disabled|default(false) %}
-{% set text     = text|default('Cliquez ici') %}
-
-<button
-  class="btn btn--{{ variant }} btn--{{ size }}{% if full %} btn--full{% endif %}"
-  type="button"
-  {% if disabled %}disabled aria-disabled="true"{% endif %}
->
-  {{ text }}
-</button>
+<button class="btn btn--{{ variant }} btn--{{ size }}{% if full %} btn--full{% endif %}" type="{{ type }}"{% if disabled %} disabled{% endif %}>{{ text }}</button>
 ```
 
-Exemple molecule :
+Page : elle etend un gabarit et remplit ses blocs.
 
 ```twig
-{% set label_text = label|default('Label') %}
-{% set input_id   = id|default('field') %}
-{% set required   = required|default(false) %}
-{% set hasError   = hasError|default(false) %}
-
-<div class="form-field{% if hasError %} form-field--error{% endif %}">
-  {% include 'dev/components/label/label.twig' with {
-    text: label_text,
-    for: input_id,
-    required: required
-  } %}
-
-  {% include 'dev/components/input/input.twig' with {
-    id: input_id,
-    hasError: hasError
-  } %}
-</div>
-```
-
-Regle `include` :
-- toujours passer les variables explicitement via `with { ... }`
-- ne jamais compter sur l'heritage de contexte implicite
-- quand un parent pilote un enfant via `parts` ou `collections`, passer explicitement les champs plats exposes au composant enfant
-
----
-
-## 5. SCSS d'un composant - regles
-
-```scss
-@use '../base/variables' as *;
-@use '../base/mixins' as *;
-
-.btn {
-  &--primary { /* variante */ }
-  &--sm { /* taille */ }
-  &--full { width: 100%; }
-
-  &:focus-visible {
-    @include focus-ring;
-  }
-
-  &:disabled,
-  &[aria-disabled="true"] {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-```
-
-Regles :
-- `@use '../base/variables' as *;` en tete de chaque fichier composant
-- variables design system obligatoires, zero valeur hardcodee si un token existe
-- pas de `!important`
-- pas de selecteurs HTML nus dans les composants (`.btn` oui, `button` non)
-- mobile first
-- import manuel dans `style.scss`
-
-### Contrat responsive
-
-- concevoir mobile first et utiliser les breakpoints/tokens existants avant d'introduire une rupture locale
-- garder un ordre DOM coherent avec l'ordre de lecture et le parcours clavier, meme si la disposition visuelle change
-- ne pas masquer un contenu ou une action essentielle pour faire tenir une composition
-- eviter tout scroll horizontal global a largeur reduite ou au zoom, sauf contenu reellement bidimensionnel et documente
-- permettre aux textes longs, aides, erreurs, libelles et contenus traduits de se replier sans chevauchement ni troncature destructive
-- laisser la page piloter le placement global ; un composant ne doit gerer que son adaptation interne
-- documenter dans `[nom].md` toute reorganisation, limite de contenu ou contrainte responsive non evidente
-
----
-
-## 6. Variables SCSS disponibles
-
-### Couleurs
-```scss
-$color-primary / $color-primary-light / $color-primary-dark
-$color-secondary / $color-secondary-light / $color-secondary-dark
-$color-success / $color-success-light / $color-success-dark
-$color-danger / $color-danger-light / $color-danger-dark
-$color-warning / $color-warning-light / $color-warning-dark
-$color-gray-50 ... $color-gray-900
-$color-white / $color-black
-```
-
-### Typographie
-```scss
-$font-size-xs / sm / base / lg / xl / 2xl / 3xl / 4xl
-$font-weight-normal / medium / semibold / bold
-$line-height-tight / normal / relaxed
-$font-family-base / $font-family-mono
-```
-
-### Espacements
-```scss
-$spacing-xs / sm / md / lg / xl / 2xl / 3xl
-```
-
-### Autres
-```scss
-$radius-sm / md / lg / xl / 2xl / full
-$shadow-sm / md / lg / xl
-$transition-fast / base / slow
-$breakpoint-sm / md / lg / xl / 2xl
-$z-dropdown / sticky / fixed / modal-backdrop / modal / popover / tooltip
-```
-
-### Mixins
-```scss
-@include respond-to('md')
-@include flex-center
-@include flex-between
-@include truncate
-@include visually-hidden
-@include focus-ring
+{% extends 'dev/layouts/base.twig' %}
+{% block title %}Contact{% endblock %}
+{% block content %}
+  <h1>Nous contacter</h1>
+  {% include 'dev/components/form-field/form-field.twig' with { label: 'Nom', id: 'name' } only %}
+{% endblock %}
 ```
 
 ---
 
-## 7. Accessibilite - contrat par type
+## 5. Styles - mode configure
 
-Principes communs :
-- preferer un element HTML natif adapte avant d'ajouter ARIA
-- produire un HTML valide et semantique pour l'usage reel
-- donner un nom accessible explicite a tout element interactif
-- garantir un focus visible, un ordre de focus logique et une utilisation clavier equivalente a la souris
-- ne jamais transmettre une information uniquement par la couleur, la forme, la taille ou la position
-- conserver des contrastes suffisants pour les textes, les etats et l'indicateur de focus
-- documenter dans `[nom].md` ce que le composant garantit et ce que son consommateur doit fournir
-- ne jamais annoncer une conformite RGAA sur la seule base d'Axe, du validateur HTML ou d'une revue agentique
+Le mode se choisit en debut de projet dans `openui.config.json` (`"styling": "scss"` par defaut, ou `"tailwind"`). Lire **uniquement** la doc du mode : `docs/styling-scss.md` ou `docs/styling-tailwind.md`.
 
-Boutons, liens et controles :
-- utiliser `button` pour une action et `a[href]` pour une navigation
-- definir `type="button"` pour un bouton qui ne soumet pas un formulaire
-- utiliser l'attribut natif `disabled` quand l'element le supporte ; reserver `aria-disabled` aux patterns qui ne peuvent pas etre desactives nativement et neutraliser alors toutes les activations
-- exposer les etats utiles (`aria-expanded`, `aria-pressed`, `aria-current`, `aria-selected`) seulement lorsque le pattern les exige
-- documenter les touches, le focus initial et le retour de focus des composants interactifs complexes
-
-Formulaires :
-- associer chaque champ a un `<label>` visible via `for` + `id` quand le controle le permet
-- ne pas utiliser le placeholder comme remplacement du label
-- regrouper les radios ou cases liees avec `fieldset` et `legend`
-- relier aides et erreurs avec `aria-describedby` et exposer `aria-invalid="true"` sur un champ invalide
-- rendre les erreurs visibles, explicites et annoncables sans appliquer automatiquement `role="alert"` a tout message
-- garder des identifiants uniques dans la page et documenter le comportement de focus apres validation
-
-Images, icones et medias :
-- fournir un `alt` pertinent pour une image informative et `alt=""` pour une image decorative
-- masquer aux technologies d'assistance une icone decorative redondante avec un texte voisin
-- donner un nom accessible a un bouton icone seul
-- ne pas inventer une alternative editoriale quand son sens depend du contexte : documenter l'obligation du consommateur
-- documenter les besoins de sous-titres, transcription, audiodescription ou fallback quand un media est accepte
-
-Navigation et structure de page :
-- definir la langue et un titre explicite sur chaque document complet
-- exposer un contenu principal, une hierarchie de titres logique et des landmarks coherents
-- nommer uniquement les regions de navigation ambigues ou multiples
-- ajouter un lien d'evitement quand une navigation repetee precede le contenu principal
-- garder l'ordre DOM coherent avec l'ordre visuel, la lecture et le clavier sur toutes les largeurs
-
-Tableaux, listes et contenus repetes :
-- utiliser `table`, `th` et les associations necessaires pour de vraies donnees tabulaires
-- utiliser une liste semantique pour un contenu reellement listable
-- contextualiser le nom accessible des actions repetees par ligne ou par carte
-- ne laisser aucun contenu essentiel disponible uniquement au survol
+Regles communes :
+- tokens obligatoires, aucune valeur en dur si un token existe
+- pas de `!important`, pas de styles inline
+- focus visible sur tout element interactif
+- mobile first ; ordre DOM = ordre de lecture et de tabulation, quelle que soit la largeur
+- ne jamais masquer un contenu ou une action essentielle pour faire tenir une mise en page ; pas de scroll horizontal global
+- textes longs, aides et erreurs se replient sans chevauchement
+- la page pilote le placement global ; un composant ne gere que son adaptation interne
 
 ---
 
-## 8. Procedure complete - creer un composant
+## 6. Tokens
 
-### Etape 1 - Creer le dossier
+Etape 1, avant le premier composant (kit de depart dans `templates/`). Contrat complet : `docs/design-tokens.md`.
 
-```text
-dev/components/[nom]/
-```
-
-### Etape 2 - Creer `[nom].json`
-
-- definir `name`, `level`, `category`, `description`
-- lister les `variants` et `content`
-- chaque controle a un `type`, `label`, `default`, et `options` si `select`
-- si le composant compose d'autres composants editables, ajouter `parts`
-- si le composant pilote une vraie liste repetitive, ajouter `collections` avec `kind: "list"`
-- si plusieurs composants semblables gardent chacun leur propre texte, aide, options ou placement, ne pas les modeliser automatiquement comme une `collection` bulk
-- privilegier `autoBind: true` quand les noms du parent suivent la convention prefixee
-- utiliser `exclude` pour masquer les champs enfant non pertinents en inspection
-- utiliser `binding` explicite seulement si la convention `autoBind` ne convient pas
-
-### Etape 3 - Creer `[nom].twig`
-
-- declarer toutes les variables avec `{% set var = var|default(...) %}`
-- construire le HTML avec BEM
-- inclure les components enfants avec `with { ... }`
-- integrer les attributs ARIA necessaires
-
-### Etape 4 - Creer `dev/assets/scss/components/_[nom].scss`
-
-- `@use '../base/variables' as *;` en premiere ligne
-- styles BEM avec variables design system
-- gerer `:focus-visible`, `:disabled`, etats et variantes
-
-### Etape 5 - Importer dans `style.scss`
-
-```scss
-@use 'components/[nom]';
-```
-
-### Etape 6 - Creer `[nom].md`
-
-- suivre la structure imposee
-- documenter `Usage`, `Props`, `Accessibilite`, `Exemples`
-- si le composant expose `parts` ou `collections`, documenter la convention de nommage des champs parent utilises pour les piloter
-
-### Etape 7 - Verifier
-
-- la cartographie et le rendu se régénèrent correctement
-- le composant apparait dans la liste
-- les controles JSON pilotent bien le rendu
-- les sous-composants et collections restent détectables si le composant est composé
+- variables CSS sur `:root`, memes noms dans les deux modes (`--color-*`, `--font-*`, `--text-*`, `--spacing-*`...)
+- deux couches : palette, puis roles (`--color-text`, `--color-primary`, `--color-on-primary`, `--color-success-text`...)
+- un composant n'utilise que les roles, jamais la palette ni une valeur hexadecimale
+- `npm run health` verifie les contrastes entre roles
 
 ---
 
-## 9. Conventions de nommage
+## 7. Accessibilite
+
+Principes :
+- element HTML natif avant ARIA ; HTML valide et semantique
+- nom accessible explicite pour tout element interactif
+- focus visible, ordre logique, tout utilisable au clavier
+- aucune information portee seulement par la couleur, la forme ou la position
+- contrastes suffisants pour textes, etats et focus
+- documenter dans `[nom].md` ce que le composant garantit et ce que le consommateur doit fournir
+- ne jamais annoncer une conformite RGAA sur la seule base d'Axe, du validateur ou d'une revue agentique (skill `rgaa` pour les revues)
+
+Controles : `button` pour une action, `a[href]` pour une navigation ; `type="button"` hors soumission ; `disabled` natif ; etats ARIA (`aria-expanded`, `aria-current`...) seulement si le pattern les exige.
+
+Formulaires : `<label for>` visible ; jamais le placeholder comme label ; `fieldset` + `legend` pour les groupes ; aide et erreur reliees par `aria-describedby`, `aria-invalid="true"` en erreur ; message d'erreur qui dit quoi corriger ; `id` uniques dans la page.
+
+Images et icones : `alt` pertinent si informative, `alt=""` si decorative ; icone decorative en `aria-hidden="true"` ; bouton icone seul avec un nom accessible.
+
+Page : `lang`, `title` explicite, un `main`, titres hierarchises, `nav` nommees si plusieurs, lien d'evitement avant une navigation repetee.
+
+---
+
+## 8. Procedure - creer un composant
+
+0. Tokens en place (`npm run health` sans erreur `TOKENS`) ; sinon poser d'abord le kit de depart.
+1. Chercher un composant ou une variante existante (`npm run list`, `.openui/graph.json`) avant de creer.
+2. `[nom].json` en `in-progress`, avec les vraies valeurs par defaut.
+3. `[nom].twig`, styles du mode, `[nom].js` si interactif (et son import).
+4. `[nom].md`.
+5. Verifier : `npm run validate`, `npm run health`, `npm run snapshot -- [nom]` (captures mobile/desktop, focus clavier, Axe), relire les captures ; `npm run impact -- [nom]` si le composant etait deja utilise.
+6. Passer a `done`.
+
+---
+
+## 9. Nommage
 
 | Element | Convention | Exemple |
 |---------|-----------|---------|
-| Dossier composant | `kebab-case` | `form-field/` |
-| Fichier Twig | `kebab-case.twig` | `form-field.twig` |
-| Fichier SCSS | `_kebab-case.scss` | `_form-field.scss` |
-| Fichier JSON | `kebab-case.json` | `form-field.json` |
-| Classes CSS | BEM `.block__element--modifier` | `.btn--primary` |
-| Variables SCSS | `$categorie-nom` | `$color-primary`, `$spacing-md` |
-| Fichier SVG icone | `kebab-case.svg` | `arrow-right.svg` |
-| Champ parent `autoBind` | `[prefixe][ChampEnfantCapitalise]` | `ctaText`, `footerCopyright` |
+| Dossier, fichiers d'un composant | `kebab-case` | `form-field/form-field.twig` |
+| Props JSON | `camelCase` | `navLabel`, `newWindow` |
+| Attributs de script | `data-[nom]-*` | `data-site-header-toggle` |
+| Fichier SVG | `kebab-case.svg` | `arrow-right.svg` |
 
 ---
 
-## 10. Erreurs frequentes a eviter
+## 10. Erreurs frequentes
 
 | Erreur | Correct |
 |--------|---------|
 | `<button>` sans `type` | `<button type="button">` |
-| Variable Twig sans `|default()` | `{% set text = text|default('...') %}` |
-| Valeur CSS hardcodee | Utiliser un token design system |
-| `!important` | Revoir la specificite CSS |
-| Include Twig sans `with { ... }` | Toujours passer les variables explicitement |
-| Copier le JSON complet d'un sous-composant dans le parent | Referencer l'enfant via `parts` ou `collections` |
-| Mapper a la main tous les champs alors que la convention suffit | Utiliser `autoBind: true` |
-| Exposer en bulk une liste de champs editoriaux item par item | Utiliser `exclude` sur la collection |
-| Atom qui inclut une molecule | Respecter la composition descendante |
-| Import SCSS auto-genere | Import manuel dans `style.scss` |
-| `outline: none` sans alternative | Utiliser `@include focus-ring` |
+| Defaut repete dans le Twig (`text\|default('...')`) | Defaut dans le JSON seulement |
+| Contenu de demonstration comme `default` | Vraie valeur par defaut ; le contenu reel est passe par la page |
+| `include` sans `only` | `with { ... } only` (twig.js : `with {} only`) |
+| Valeur CSS en dur ou couleur de palette | Un role ou une echelle de tokens |
+| `outline: none` sans alternative | Focus visible selon la doc du mode |
+| Page qui recopie `head`, header et footer | `{% extends 'dev/layouts/base.twig' %}` |
+| Atom qui inclut une molecule | Composition descendante |
 
 ---
 
-## 11. Convention icones natives
+## 11. Icones
 
-Les icones utilisent un sprite SVG auto-genere.
-
-Architecture :
-
-```text
-dev/assets/icons/
-|- unitaires/   <- Sources
-|- sprite.svg   <- Auto-genere, ne pas modifier a la main
-`- doc.html     <- Auto-genere
-```
-
-Ajouter une icone :
-1. deposer `[nom].svg` dans `dev/assets/icons/unitaires/`
-2. laisser le watcher regenerer `sprite.svg` + `doc.html`
-3. hors dev server : `npm run icons`
-
-Regles SVG :
-- `viewBox` obligatoire
-- supprimer `width` / `height` fixes
-- `fill="currentColor"`
-- noms semantiques en `kebab-case`
-
-Usage de l'atom `icon` :
-
-```twig
-{% include 'dev/components/icon/icon.twig' with {
-  name: 'search',
-  size: 'md',
-  label: 'Rechercher'
-} %}
-```
-
----
-
-## 12. Separation `app/` vs `dev/`
-
-- `app/` -> réservé à une future interface. Ne pas utiliser tant que le noyau agentique n’est pas stabilisé.
-- `dev/` -> projet utilisateur. C'est ici que travaille l'integrateur.
-
-Les styles de `app/` ne doivent pas affecter le rendu des composants `dev/`.
+Pas encore de systeme d'icones : SVG en ligne, `aria-hidden="true" focusable="false"`, couleur `currentColor` (exemples : `header`, `link`). Sources SVG facultatives dans `dev/assets/icons/unitaires/` (`npm run icons` les liste). Un atome `icon` et un sprite seront a creer quand plusieurs composants partageront les memes icones.

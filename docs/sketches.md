@@ -22,7 +22,7 @@ Une demande vague ne suffit pas a basculer en esquisse : dans ce cas, il faut ca
 - Une esquisse ne doit pas modifier des composants canoniques, tokens globaux ou conventions partagees sans confirmation explicite.
 - Une esquisse HTML/CSS/JS autonome a sa source dans `dev/sketches/<slug>/`.
 - `public/sketches/<slug>/` est le rendu généré par Vite : il peut être ignoré pendant le développement ou conservé pour la production, mais ne constitue jamais la source de vérité.
-- Si une esquisse devient utile, elle doit etre promue en composant canonique avec JSON, Twig, Markdown et SCSS propres.
+- Si une esquisse devient utile, elle doit etre promue en composant canonique avec JSON, Twig, Markdown et styles propres au mode configure.
 - La promotion doit inclure une analyse d'impact, les variantes/tokens necessaires et une verification RGAA selon la cible.
 - La promotion passe par `/open-ui-consolidate-sketch` et le skill `sketch-to-production`.
 
@@ -31,7 +31,7 @@ Une demande vague ne suffit pas a basculer en esquisse : dans ce cas, il faut ca
 | Type | But | Contraintes |
 |------|-----|-------------|
 | Esquisse | explorer une idee | rapide, explicite, non canonique, tunnel a part |
-| Composant | reutiliser durablement | JSON/Twig/MD/SCSS, accessibilite, tokens, impact |
+| Composant | reutiliser durablement | JSON/Twig/MD/styles, accessibilite, tokens, impact |
 
 ## Sortie attendue d'une esquisse
 

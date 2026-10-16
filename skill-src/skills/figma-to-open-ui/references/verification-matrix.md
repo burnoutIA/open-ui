@@ -9,7 +9,7 @@ Appliquer cette matrice pendant la commande `open-ui-implement-figma`. Adapter l
 | Reutilisation avant creation | Mapping final vers les composants et variantes |
 | Niveau de changement | Justification composant, variante, page ou token |
 | Relations | Graphe ou analyse d'impact relu |
-| Contrats | JSON, Twig, Markdown et SCSS valides |
+| Contrats | JSON, Twig, Markdown et styles du mode configure valides |
 | Tokens | Aucun nouveau token sans besoin transversal confirme |
 
 ## Fidelite Figma
@@ -50,7 +50,7 @@ Ne pas imposer un pixel-perfect aveugle. Corriger les ecarts de mise en oeuvre ;
 |---|---|
 | JSON | `npm run validate` |
 | Tests | `npm test` selon le changement |
-| SCSS | `npm run lint:scss` si styles touches |
+| Styles | `npm run lint:scss` si SCSS touche (mode SCSS) ; `npm run build` dans les deux modes |
 | Build | `npm run build` si rendu ou imports touches |
 | Impact | `npm run impact -- <composant>` pour les composants partages |
 | HTML | Validation W3C/Nu disponible |

@@ -1,0 +1,10 @@
+// Point d'entrée des styles du projet (styleEntry dans openui.config.json)
+@use 'base/tokens';
+@use 'base/fonts';
+@use 'base/reset';
+@use 'base/typography';
+@use 'layout/container';
+@use 'layout/grid';
+@use 'layout/page';
+
+// Composants : un @use par composant, ajouté à la création
