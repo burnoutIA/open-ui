@@ -28,8 +28,10 @@ function parseArgs(argv) {
 }
 
 // Une case par état utile : défauts, chaque option de select, chaque checkbox activée.
+// Chaque cas part de `preview` (démonstration du JSON), comme le Showcase.
 export function buildCases(entry, extraProps = []) {
-  const cases = [{ label: 'défaut', props: {} }]
+  const preview = entry.preview ?? {}
+  const cases = [{ label: Object.keys(preview).length ? 'aperçu' : 'défaut', props: {} }]
   for (const props of extraProps) cases.push({ label: JSON.stringify(props), props })
   for (const [key, control] of Object.entries(entry.variants ?? {})) {
     if (control.type === 'select') {
@@ -41,7 +43,7 @@ export function buildCases(entry, extraProps = []) {
       cases.push({ label: `${key}`, props: { [key]: true } })
     }
   }
-  return cases
+  return cases.map((testCase) => ({ ...testCase, props: { ...preview, ...testCase.props } }))
 }
 
 async function isReachable(url) {
@@ -63,7 +65,7 @@ async function startServer() {
   return { url: server.resolvedUrls.local[0].replace(/\/$/, ''), close: () => server.close() }
 }
 
-async function render(baseUrl, entryType, entryId, props) {
+export async function render(baseUrl, entryType, entryId, props) {
   const response = await fetch(baseUrl + SHOWCASE_API.render, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -78,7 +80,7 @@ function escapeHtml(value) {
   return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 }
 
-async function runAxe(page, selector) {
+export async function runAxe(page, selector) {
   if (!(await page.evaluate(() => Boolean(window.axe)))) {
     await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') })
   }

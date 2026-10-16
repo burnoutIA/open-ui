@@ -56,6 +56,7 @@ Un composant canonique doit avoir JSON, Twig, Markdown et les styles du mode con
 - `npm run lint:scss` si SCSS touche (mode SCSS)
 - `npm run build` si rendu/imports/pages touches
 - `npm run snapshot -- <component>` (ou `page:<page>`) si une UI visible change : captures mobile/desktop, focus clavier, Axe
+- `npm run test:e2e` avant de livrer : tous les composants et pages, Axe et ouverture dans le Showcase
 
 ## Questions a resoudre
 

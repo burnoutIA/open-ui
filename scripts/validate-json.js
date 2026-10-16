@@ -31,6 +31,19 @@ function validateStatus(file, status) {
   }
 }
 
+// `preview` : valeurs de démonstration du Showcase ; seulement pour des props déclarées.
+function validatePreview(file, schema) {
+  if (schema.preview == null) return
+  if (typeof schema.preview !== 'object' || Array.isArray(schema.preview)) {
+    fail(file, 'preview must be an object')
+    return
+  }
+  const declared = new Set([...Object.keys(schema.variants ?? {}), ...Object.keys(schema.content ?? {})])
+  for (const key of Object.keys(schema.preview)) {
+    if (!declared.has(key)) fail(file, `preview.${key} is not a declared variant or content control`)
+  }
+}
+
 function validateArrayItem(file, controlPath, item) {
   if (!item || typeof item !== 'object' || Array.isArray(item)) {
     fail(file, `${controlPath}.item must be an object`)
@@ -100,6 +113,7 @@ for (const component of components) {
 
   validateControls(file, 'variants', schema.variants ?? {})
   validateControls(file, 'content', schema.content ?? {})
+  validatePreview(file, schema)
 
   for (const ref of collectRefs(schema)) {
     if (ref !== 'grid' && !componentIds.has(ref)) fail(file, `references unknown component "${ref}"`)
@@ -118,6 +132,7 @@ for (const page of pages) {
 
   validateControls(file, 'variants', schema.variants ?? {})
   validateControls(file, 'content', schema.content ?? {})
+  validatePreview(file, schema)
 
   for (const ref of collectRefs(schema)) {
     if (ref !== 'grid' && !componentIds.has(ref)) fail(file, `references unknown component "${ref}"`)

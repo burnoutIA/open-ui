@@ -14,7 +14,7 @@
     "validate": "node scripts/validate-json.js",
     "health": "node scripts/health.js",
     "lint:scss": "stylelint \"dev/assets/scss/**/*.scss\" --allow-empty-input",
-    "test:a11y": "node scripts/test-a11y.js",
+    "test:e2e": "playwright test",
     "snapshot": "node scripts/snapshot.js",
     "test": "vitest run --passWithNoTests",
     "test:empty": "node scripts/test-empty-workspace.js",

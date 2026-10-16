@@ -44,7 +44,7 @@ npx playwright install chromium
 
 Aucune commande d’initialisation n’est nécessaire. Le moteur du Showcase est livré et versionné dans `showcase/`.
 
-- `dev/` est la racine structurelle des sources projet. Le dépôt conserve `dev/.gitkeep`, mais son contenu est actuellement ignoré par Git.
+- `dev/` est la racine des sources du projet. L'outil l'ignore entièrement : chez un utilisateur, c'est son design system ; ici, on y clone le workspace de test.
 - `public/` est une sortie générée. Vite le crée automatiquement pendant le build.
 - `showcase/` contient l’outil système : catalogue des composants et pages, inspecteur de propriétés, iframe de rendu et affichage du HTML courant.
 - La feuille de styles du projet est facultative au départ. Le Showcase utilise une feuille vide tant qu’elle n’existe pas, puis charge automatiquement les styles du projet lorsqu’elle est créée.
@@ -120,14 +120,17 @@ OPENUI_W3C_VALIDATOR_URL=http://localhost:8888/ npm run dev
 
 Si le service Nu est indisponible, le Showcase affiche un contrôle HTML partiel sans bloquer l’analyse Axe locale.
 
-## Développer l'outil : la branche `workspace`
+## Développer l'outil : le workspace de test
 
-Ce dépôt produit l'outil : `dev/` y est ignoré pour ne pas livrer nos composants de test. Pour éprouver l'outil sur du vrai contenu, la branche `workspace` versionne un `dev/` peuplé (tokens, composants, gabarit, page).
+Ce dépôt produit l'outil : `dev/` y est ignoré, comme le contenu d'un projet. Pour éprouver l'outil sur du vrai contenu (tokens, composants, gabarit, pages), cloner le workspace de test dans `dev/` :
 
-- **Ne jamais fusionner `workspace` dans `develop` ni dans `main`.** Le sens est toujours `develop` → `workspace`.
-- Tester une évolution de l'outil : `git checkout workspace && git merge develop`, puis `npm run dev`, `npm test`, `npm run snapshot -- <nom>`.
-- Revenir sur `develop` retire `dev/` du dossier de travail : c'est normal, il n'existe que sur `workspace`.
-- Pour garder les deux côte à côte : `git worktree add ../open-ui-workspace workspace`.
+```bash
+git clone https://github.com/burnoutIA/open-ui-workspace dev
+```
+
+- `dev/` est alors un dépôt git à part : changer de branche dans l'outil n'y touche jamais.
+- Le contenu de test se commite et se pousse depuis `dev/`, l'outil depuis la racine.
+- `npm test` et `npm run test:e2e` couvrent alors chaque composant et chaque page. La CI GitHub clone ce même workspace avant son test de bout en bout.
 
 ## Architecture
 
@@ -155,6 +158,7 @@ Le Showcase ne réécrit jamais les JSON : les modifications faites dans son for
 | `npm run snapshot -- <composant>` | Capture chaque variante en mobile et desktop, le focus clavier, et lance Axe (Playwright) |
 | `npm run test` | Lance les tests automatisés |
 | `npm run test:empty` | Construit une copie temporaire sans `dev/` ni `public/` |
+| `npm run test:e2e` | Test de bout en bout (Playwright) : chaque composant et page, dans chaque cas, passe Axe et s'ouvre proprement dans le Showcase |
 | `npm run lint:scss` | Vérifie les sources SCSS présentes (mode SCSS) |
 | `npm run graph` | Régénère `.openui/graph.json` |
 | `npm run graph:check` | Vérifie que l’index correspond aux sources |

@@ -1,0 +1,43 @@
+# Contrôles de l'outil.
+# checks : dev/ absent, comme au démarrage d'un projet.
+# e2e : dev/ cloné depuis open-ui-workspace, comme chez un utilisateur ; chaque composant et chaque page est couvert.
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run lint:scss
+      - run: npm run validate
+      - run: npm run health
+      - run: npm run skills:check -- --target codex
+      - run: npm run test:empty
+      - run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: git clone --depth 1 https://github.com/burnoutIA/open-ui-workspace dev
+      - run: npm run validate
+      - run: npm run health
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
