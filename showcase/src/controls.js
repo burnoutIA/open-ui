@@ -1,3 +1,5 @@
+import { stressSteps } from '../shared/stress.js'
+
 const CONTROL_GROUPS = [
   { key: 'variants', label: 'Variantes' },
   { key: 'content', label: 'Contenu' }
@@ -137,7 +139,10 @@ function createControl(groupName, key, control, value, onChange) {
   }
 
   if (control.type === 'number') {
-    wrapper.append(createNumber(id, key, control, value, onChange))
+    appendStressable(wrapper, key, control, value, onChange, (initial, change) => {
+      const input = createNumber(id, key, control, initial, change)
+      return { element: input, show: (next) => { input.value = String(next) } }
+    })
     return wrapper
   }
 
@@ -147,7 +152,18 @@ function createControl(groupName, key, control, value, onChange) {
   }
 
   if (control.type === 'array') {
-    wrapper.append(createArrayEditor(id, key, control, value, onChange, label.id))
+    appendStressable(wrapper, key, control, value, onChange, (initial, change) => {
+      let editor = createArrayEditor(id, key, control, initial, change, label.id)
+      return {
+        element: editor,
+        // L'éditeur de liste se reconstruit pour montrer les éléments générés.
+        show: (next) => {
+          const rebuilt = createArrayEditor(id, key, control, next, change, label.id)
+          editor.replaceWith(rebuilt)
+          editor = rebuilt
+        }
+      }
+    })
     return wrapper
   }
 
@@ -156,8 +172,76 @@ function createControl(groupName, key, control, value, onChange) {
     return wrapper
   }
 
-  wrapper.append(createText(id, key, value, onChange, control))
+  appendStressable(wrapper, key, control, value, onChange, (initial, change) => {
+    const input = createText(id, key, initial, change, control)
+    return { element: input, show: (next) => { input.value = next } }
+  })
   return wrapper
+}
+
+// Boutons de stress sous un champ texte, nombre ou liste : chaque clic passe au palier suivant
+// (3 mots, 6, 12… mot interminable, vide) ; « Rétablir » rend la valeur d'avant le stress.
+// Une saisie à la main remplace cette valeur : elle devient la nouvelle référence.
+function appendStressable(wrapper, key, control, value, onChange, createField) {
+  const steps = stressSteps(control)
+  let current = value
+  let step = -1
+  let original
+
+  const field = createField(value, (changedKey, next, changedControl) => {
+    current = next
+    step = -1
+    original = undefined
+    refresh()
+    onChange(changedKey, next, changedControl)
+  })
+  wrapper.append(field.element)
+  if (!steps.length) return
+
+  const row = document.createElement('div')
+  row.className = 'control__stress'
+
+  const stressButton = document.createElement('button')
+  stressButton.type = 'button'
+  stressButton.className = 'stress-button'
+
+  const restoreButton = document.createElement('button')
+  restoreButton.type = 'button'
+  restoreButton.className = 'stress-button'
+  restoreButton.textContent = 'Rétablir'
+
+  const apply = (next) => {
+    current = next
+    field.show(next)
+    refresh()
+    onChange(key, next, control)
+  }
+
+  const createItem = () => {
+    const itemSchema = resolveArrayItemSchema(control, original)
+    return itemSchema ? createArrayItemDefault(itemSchema) : {}
+  }
+
+  function refresh() {
+    stressButton.textContent = step === -1 ? 'Stress' : `Stress · ${steps[step].label}`
+    restoreButton.disabled = step === -1
+  }
+
+  stressButton.addEventListener('click', () => {
+    if (step === -1) original = cloneValue(current)
+    step = (step + 1) % steps.length
+    apply(steps[step].value(original, createItem))
+  })
+
+  restoreButton.addEventListener('click', () => {
+    step = -1
+    apply(cloneValue(original))
+    original = undefined
+  })
+
+  refresh()
+  row.append(stressButton, restoreButton)
+  wrapper.append(row)
 }
 
 function createSelect(id, key, control, value, onChange) {

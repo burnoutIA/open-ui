@@ -890,6 +890,40 @@ a:focus-visible {
   opacity: 0.55;
 }
 
+.control__stress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.stress-button {
+  min-height: 1.75rem;
+  padding: 0.25rem 0.55rem;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.stress-button:hover:not(:disabled) {
+  background: var(--accent-soft);
+}
+
+.stress-button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.stress-button:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .inspector__form {
   padding: 1rem 1.25rem;
 }

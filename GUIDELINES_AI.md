@@ -67,6 +67,7 @@ Structure imposee pour `[nom].md` : `# Nom`, puis `## Usage`, `## Props` (tablea
 - `status` : `todo`, `in-progress` ou `done` (absent = `done`). Passer a `in-progress` des le debut d'un travail, a `done` seulement apres les verifications de la section 8.
 - `variants` = apparence et etats ; `content` = textes et donnees.
 - Types de controles : `select` (avec `options`), `checkbox`, `text`, `number`, `color`, `array` (liste avec `item.fields`, voir `docs/component-model.md`).
+- `"stress": false` sur une prop technique (identifiant, URL, jeton) : le Showcase n'affiche pas ses boutons de stress.
 
 Valeurs par defaut :
 - le `default` du JSON est la **seule** source : le moteur l'injecte dans le Twig quand la prop n'est pas passee, y compris pour un composant inclus depuis une page ;
