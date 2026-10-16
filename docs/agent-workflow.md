@@ -49,6 +49,7 @@ Un composant canonique doit avoir JSON, Twig, Markdown et SCSS si necessaire. Un
 ## Verifications minimales
 
 - `npm run validate`
+- `npm run health` si la structure du workspace, les docs ou les imports changent
 - `npm run graph:check`
 - `npm run list` si la cartographie doit etre relue
 - `npm run impact -- <component>` si un composant est touche

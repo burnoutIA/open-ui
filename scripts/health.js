@@ -78,8 +78,14 @@ function checkDocumentation(mdPath) {
   }
 }
 
-function hasScssImport(kind, id) {
+function hasScssImport(scssPath) {
+  const kind = path.basename(path.dirname(scssPath))
+  const id = path.basename(scssPath, '.scss').replace(/^_/, '')
   return new RegExp(`@use\\s+['\"]${kind}/${id}['\"]`).test(styleContent)
+}
+
+function scssImportHint(scssPath) {
+  return `@use '${path.basename(path.dirname(scssPath))}/${path.basename(scssPath, '.scss').replace(/^_/, '')}';`
 }
 
 function checkStatus(file, schema, scope) {
@@ -116,8 +122,8 @@ function checkComponent(component) {
   checkStatus(jsonPath, schema, 'component')
 
   if (!fs.existsSync(scssPath)) add('error', 'files', scssPath, 'SCSS composant absent')
-  if (fs.existsSync(scssPath) && !hasScssImport('components', id)) {
-    add('error', 'scss', stylePath, `Import SCSS manquant pour ${id}`, `@use 'components/${id}';`)
+  if (fs.existsSync(scssPath) && !hasScssImport(scssPath)) {
+    add('error', 'scss', stylePath, `Import SCSS manquant pour ${id}`, scssImportHint(scssPath))
   }
 
   checkDocumentation(mdPath)
@@ -133,8 +139,8 @@ function checkPage(page) {
   checkRequiredJson(jsonPath, schema, ['name', 'description'])
   checkStatus(jsonPath, schema, 'page')
   if (!fs.existsSync(twigPath)) add('error', 'files', twigPath, 'Template Twig absent')
-  if (fs.existsSync(scssPath) && !hasScssImport('pages', `${id}-page`)) {
-    add('error', 'scss', stylePath, `Import SCSS de page manquant pour ${id}`, `@use 'pages/${id}-page';`)
+  if (fs.existsSync(scssPath) && !hasScssImport(scssPath)) {
+    add('error', 'scss', stylePath, `Import SCSS de page manquant pour ${id}`, scssImportHint(scssPath))
   }
   checkControls(jsonPath, 'variants', schema.variants)
   checkControls(jsonPath, 'content', schema.content)
@@ -142,7 +148,8 @@ function checkPage(page) {
   checkRefs(twigPath, collectTwigIncludes(twigPath))
 }
 
-if (!fs.existsSync(stylePath)) add('error', 'scss', stylePath, 'Point d’entrée SCSS absent')
+// Un workspace vide est valide : le point d'entrée SCSS ne devient obligatoire qu'avec du contenu.
+if ((components.length || pages.length) && !fs.existsSync(stylePath)) add('error', 'scss', stylePath, 'Point d’entrée SCSS absent')
 for (const component of components) checkComponent(component)
 for (const page of pages) checkPage(page)
 

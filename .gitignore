@@ -10,3 +10,4 @@ dev/*
 .openui-empty-*/
 .openui/graph.json
 .claude/*
+.skill-harness/claude.lock.json

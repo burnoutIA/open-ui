@@ -113,6 +113,7 @@ Le Showcase ne réécrit jamais les JSON : les modifications faites dans son for
 | `npm run dev` | Lance Vite, le Showcase et les mises à jour live |
 | `npm run build` | Génère le rendu dans `public/` |
 | `npm run validate` | Valide les contrats JSON et régénère l’index local |
+| `npm run health` | Contrôle la dette structurelle : nommage, fichiers, docs, imports SCSS, statuts |
 | `npm run test` | Lance les tests automatisés |
 | `npm run test:empty` | Construit une copie temporaire sans `dev/` ni `public/` |
 | `npm run lint:scss` | Vérifie les sources SCSS présentes |

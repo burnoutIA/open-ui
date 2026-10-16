@@ -10,6 +10,7 @@ Ces documents posent les contrats du projet. `GUIDELINES_AI.md` reste le documen
 - `design-tokens.md` : role et regles des tokens de design.
 - `project-workspaces.md` : cible multi-projets, non appliquee pour l'instant.
 - `sketches.md` : difference entre esquisse exploratoire et composant canonique.
+- `sketch-to-canonical.md` : procedure pour transformer une esquisse selectionnee en composant ou pattern canonique.
 - `skill-harness.md` : source canonique des skills, adaptateurs et generation ciblee par harnais.
 
 ## Regle
