@@ -66,7 +66,8 @@ Structure imposee pour `[nom].md` : `# Nom`, puis `## Usage`, `## Props` (tablea
 - Obligatoires : `name`, `level`, `category`, `description`.
 - `status` : `todo`, `in-progress` ou `done` (absent = `done`). Passer a `in-progress` des le debut d'un travail, a `done` seulement apres les verifications de la section 8.
 - `variants` = apparence et etats ; `content` = textes et donnees.
-- Types de controles : `select` (avec `options`), `checkbox`, `text`, `number`, `color`, `array` (liste avec `item.fields`, voir `docs/component-model.md`).
+- Types de controles : `select` (avec `options`), `checkbox`, `text`, `number`, `color`, `image` (`{ "src": "", "alt": "" }`, `alt` vide = decorative), `array` (liste avec `item.fields`, voir `docs/component-model.md`).
+- Images d'exemple : `/__openui/fake-image/1600x900.svg` (mire qui affiche sa taille et son ratio, generee localement), ou `{{ fake_image(1600, 900) }}` dans un Twig. A utiliser dans `preview` et dans les pages en construction, jamais comme `default` d'un composant (le vrai defaut d'une image est vide). Au build, elles deviennent des fichiers.
 - `"stress": false` sur une prop technique (identifiant, URL, jeton) : le Showcase n'affiche pas ses boutons de stress.
 
 Valeurs par defaut :

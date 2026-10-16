@@ -29,6 +29,13 @@ describe('stress du contenu', () => {
     expect(one.value([], () => ({ text: 'Nouveau' }))).toEqual([{ text: 'Nouveau' }])
   })
 
+  it('passe une image par chaque format, en gardant son texte alternatif', () => {
+    const steps = stressSteps({ type: 'image' })
+    expect(steps.map((step) => step.label)).toEqual(['paysage', 'portrait', 'carré', 'panoramique', 'minuscule', 'absente'])
+    expect(steps[1].value({ src: '/x.jpg', alt: 'Atelier' })).toEqual({ src: '/__openui/fake-image/900x1600.svg', alt: 'Atelier' })
+    expect(steps.at(-1).value({ src: '/x.jpg', alt: '' })).toEqual({ src: '', alt: '' })
+  })
+
   it('ignore une prop marquée stress: false', () => {
     expect(stressSteps({ type: 'text', stress: false })).toEqual([])
   })

@@ -107,13 +107,16 @@ async function snapshotComponent(page, baseUrl, entry, widths, extraProps) {
   // preview.html charge déjà la feuille du projet : on remplace seulement son contenu.
   await page.goto(`${baseUrl}/showcase/preview.html`)
   await page.waitForLoadState('networkidle')
-  await page.evaluate((markup) => {
+  // Même largeur que dans le Showcase : le niveau (atom, molecule…) fixe la largeur du conteneur.
+  await page.evaluate(({ markup, level }) => {
     const style = document.createElement('style')
     style.textContent = '.preview-placeholder{display:none}.openui-snap{display:grid;gap:16px;padding:16px}.openui-snap__case{display:grid;gap:6px;margin:0}.openui-snap__case figcaption{font:12px/1.4 system-ui,sans-serif;color:#555}'
     document.head.append(style)
     const root = document.querySelector('#preview-root')
+    root.dataset.level = level
+    document.body.dataset.entryType = 'component'
     root.innerHTML = `<div class="openui-snap">${markup}</div>`
-  }, cells.join(''))
+  }, { markup: cells.join(''), level: entry.level })
   await page.evaluate(() => document.fonts.ready)
 
   const files = []

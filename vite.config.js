@@ -1,7 +1,9 @@
 import fs from 'fs'
+import { createHash } from 'crypto'
 import path from 'path'
 import { defineConfig } from 'vite'
 import { SHOWCASE_API } from './showcase/shared/protocol.js'
+import { FAKE_IMAGE_PREFIX, parseFakeImageUrl, renderFakeImage } from './showcase/shared/fake-image.js'
 import { getShowcaseCatalog, getShowcaseEntry, normalizeShowcaseProps } from './showcase/server/catalog.js'
 import { readJsonBody, sendJson } from './showcase/server/http.js'
 import { EMPTY_PROJECT_SCRIPT, EMPTY_PROJECT_STYLESHEET } from './showcase/server/project-style.js'
@@ -27,6 +29,22 @@ const RESOLVED_PROJECT_SCRIPT_ID = `\0${PROJECT_SCRIPT_ID}.js`
 
 function renderTwig(filePath, data = {}, instances = null) {
   return renderTwigFile(ROOT, filePath, data, instances)
+}
+
+// Build : chaque image d'exemple utilisée par une page devient un fichier, que Vite renomme et copie dans les assets.
+const FAKE_IMAGES_DIR = path.join(ROOT, '.openui/fake-images')
+const FAKE_IMAGE_URL = /\/__openui\/fake-image\/\d{1,4}x\d{1,4}\.svg(?:\?label=[^"'\s)]*)?/g
+
+function materializeFakeImages(html) {
+  return html.replace(FAKE_IMAGE_URL, (url) => {
+    const image = parseFakeImageUrl(url.replaceAll('&amp;', '&'))
+    if (!image) return url
+    const suffix = image.label ? `-${createHash('sha1').update(image.label).digest('hex').slice(0, 8)}` : ''
+    const file = `${image.width}x${image.height}${suffix}.svg`
+    fs.mkdirSync(FAKE_IMAGES_DIR, { recursive: true })
+    fs.writeFileSync(path.join(FAKE_IMAGES_DIR, file), renderFakeImage(image.width, image.height, image.label))
+    return `/.openui/fake-images/${file}`
+  })
 }
 
 function copySketchesToPublic() {
@@ -161,7 +179,7 @@ function openUIPlugin() {
       const pages = listPageSlugs()
       const inputs = {}
       for (const slug of pages) {
-        const html = await renderTwig(path.join(PAGES_DIR, `${slug}.twig`), {})
+        const html = materializeFakeImages(await renderTwig(path.join(PAGES_DIR, `${slug}.twig`), {}))
         const tmpPath = path.join(ROOT, `${slug}.html`)
         fs.writeFileSync(tmpPath, html, 'utf8')
         temporaryHtmlPaths.add(tmpPath)
@@ -214,6 +232,14 @@ function openUIPlugin() {
 
       server.middlewares.use(async (req, res, next) => {
         const pathname = new URL(req.url, 'http://localhost').pathname
+
+        if (pathname.startsWith(FAKE_IMAGE_PREFIX)) {
+          const image = parseFakeImageUrl(req.url)
+          if (!image) return next()
+          res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8')
+          res.end(renderFakeImage(image.width, image.height, image.label))
+          return
+        }
 
         if (pathname === SHOWCASE_API.catalog) {
           if (req.method !== 'GET') {
@@ -389,6 +415,8 @@ export default defineConfig(async () => ({
   build: {
     // axe-core reste isolé et chargé uniquement au lancement d'un contrôle.
     chunkSizeWarningLimit: 600,
+    // Images d'exemple : toujours des fichiers, jamais du base64 dans le HTML livré.
+    assetsInlineLimit: (file) => (file.includes(`${path.sep}.openui${path.sep}fake-images${path.sep}`) ? false : undefined),
     outDir: 'public',
     emptyOutDir: true
   }

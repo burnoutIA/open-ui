@@ -17,6 +17,7 @@ Open UI est un workspace de design system agent-first. Le modele composant doit 
 - Un composant doit etre reutilise avant d'etre recree.
 - Modifier une page signifie souvent modifier un composant ou une configuration de composant, pas patcher la page directement.
 - Une page canonique vit dans `dev/pages/` avec au minimum `[name].json` et `[name].twig`. Elle etend un gabarit de `dev/layouts/` (`{% extends %}`) qui porte le document, le header et le footer ; les donnees partagees (nom du site, navigation, liens legaux) viennent de `dev/data/site.json`, exposees sous `site`.
+- Le controle `image` vaut `{ src, alt }` ; ses paliers de stress passent par les images d'exemple (`/__openui/fake-image/<l>x<h>.svg`) : paysage, portrait, carre, panoramique, minuscule, absente.
 - `"stress": false` sur un controle masque ses boutons de stress dans le Showcase (props techniques : identifiant, URL, jeton).
 - `preview` (facultatif) donne des valeurs de demonstration au Showcase, a `snapshot` et au test de bout en bout, sans jamais etre injecte dans une page : il separe le contenu de demo des vrais defauts.
 - Les valeurs par defaut d'un composant ou d'une page viennent uniquement de son JSON : le moteur les injecte quand une prop n'est pas passee, y compris dans un `include ... only`. Elle utilise les mêmes groupes `variants` et `content` qu'un composant pour exposer ses variables dans le Showcase.

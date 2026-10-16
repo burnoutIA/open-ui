@@ -1,6 +1,8 @@
 // Paliers de stress du contenu : même définition pour le Showcase et, plus tard, snapshot.
 // Texte en latin : il se voit comme du remplissage et laisse regarder la mise en page, pas le sens.
 
+import { fakeImageUrl } from './fake-image.js'
+
 const WORDS = (
   'lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et ' +
   'dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ' +
@@ -41,6 +43,18 @@ const ARRAY_STEPS = [0, 1, 5, 20].map((count) => ({
   }
 }))
 
+// Images : une mire par format, le texte alternatif d'origine est conservé.
+const IMAGE_STEPS = [
+  ['paysage', 1600, 900],
+  ['portrait', 900, 1600],
+  ['carré', 1200, 1200],
+  ['panoramique', 2400, 600],
+  ['minuscule', 80, 60]
+].map(([label, width, height]) => ({
+  label,
+  value: (original) => ({ src: fakeImageUrl(width, height), alt: original?.alt ?? '' })
+})).concat({ label: 'absente', value: (original) => ({ src: '', alt: original?.alt ?? '' }) })
+
 // `"stress": false` sur un contrôle : prop technique (identifiant, URL...) sans intérêt à stresser.
 export function stressSteps(control) {
   if (control.stress === false) return []
@@ -52,5 +66,6 @@ export function stressSteps(control) {
     })
   }
   if (control.type === 'array') return ARRAY_STEPS
+  if (control.type === 'image') return IMAGE_STEPS
   return []
 }

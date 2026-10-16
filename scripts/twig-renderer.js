@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import Twig from 'twig'
+import { fakeImageUrl } from '../showcase/shared/fake-image.js'
 
 // Rendu Twig d'Open UI. Le JSON d'un composant ou d'une page est la seule source de ses valeurs par défaut :
 // à chaque chargement de dev/components/<id>/<id>.twig ou dev/pages/<id>.twig, un prélude définit les props
@@ -89,6 +90,9 @@ function installOpenUITwig() {
       return parseTwig.call(this, params)
     })
   })
+
+  // Image d'exemple pour une page en construction : {{ fake_image(1600, 900, 'Atelier') }}.
+  Twig.extendFunction('fake_image', (width, height, label = '') => fakeImageUrl(Number(width), Number(height), label ? String(label) : ''))
 
   Twig.extendFunction('openui_instance', (state, key, componentId, props) => {
     if (!state || typeof state !== 'object') return props

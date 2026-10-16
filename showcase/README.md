@@ -21,6 +21,7 @@ Puis ouvrir `/showcase/` depuis l'index Open UI.
 - le panneau `HTML généré` colore le code avec Prism ; la copie reste le HTML brut ;
 - le conteneur d'un composant est dessiné en pointillés ; un débordement reste visible (sans barre de défilement), passe en rouge et s'affiche dans le badge `Débordement` ; pour une page, le badge signale un défilement horizontal ;
 - pour une page, la section `Composants de la page` liste chaque composant posé par la page et son gabarit (détecté au rendu, rien à déclarer) : chacun se modifie et se stresse séparément, temporairement ;
+- les images d'exemple sont servies par `/__openui/fake-image/<largeur>x<hauteur>.svg` (mire avec taille et ratio) ; un champ `image` les parcourt avec son bouton `Stress` (paysage, portrait, carré, panoramique, minuscule, absente) ;
 - sous chaque champ texte, nombre ou liste, `Stress` fait passer le contenu par des paliers (texte latin de 3 à 192 mots, mot interminable, vide ; nombres extrêmes ; listes de 0 à 20 éléments) et `Rétablir` rend la valeur d'avant ; une prop marquée `"stress": false` n'a pas ces boutons. Les paliers vivent dans `showcase/shared/stress.js` ;
 - le formulaire du Showcase ne modifie jamais les JSON : ses valeurs sont temporaires ;
 - les contrôles `array` avec un schéma `item` utilisent un éditeur de liste avec ajout, suppression et champs nommés ; le JSON brut reste uniquement un repli quand la forme d'un item est indéterminable ;

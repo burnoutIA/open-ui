@@ -53,6 +53,12 @@ export function normalizeComponentProps(schema, submittedProps = {}) {
 function normalizeControlValue(control, value) {
   if (control.type === 'checkbox') return Boolean(value)
 
+  // Image : toujours { src, alt } en chaînes ; alt vide = image décorative.
+  if (control.type === 'image') {
+    const image = value && typeof value === 'object' ? value : control.default ?? {}
+    return { src: String(image.src ?? ''), alt: String(image.alt ?? '') }
+  }
+
   if (control.type === 'number') {
     const number = Number(value)
     return Number.isFinite(number) ? number : Number(control.default ?? 0)

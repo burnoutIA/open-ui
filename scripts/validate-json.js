@@ -12,7 +12,7 @@ const warnings = []
 const components = getComponentEntries()
 const pages = getPageEntries()
 const componentIds = new Set(components.map((component) => component.id))
-const allowedControlTypes = new Set(['select', 'checkbox', 'text', 'color', 'number', 'array', 'component-params'])
+const allowedControlTypes = new Set(['select', 'checkbox', 'text', 'color', 'number', 'image', 'array', 'component-params'])
 const allowedArrayItemTypes = new Set(['select', 'checkbox', 'text', 'color', 'number'])
 const allowedLevels = new Set(['atom', 'molecule', 'organism', 'template'])
 const allowedStatuses = new Set(DESIGN_SYSTEM_STATUSES)
@@ -92,6 +92,12 @@ function validateControls(file, groupName, controls = {}) {
       if (!Array.isArray(control.default)) fail(file, `${groupName}.${key} array control default must be an array`)
       if (control.item) validateArrayItem(file, `${groupName}.${key}`, control.item)
       else warn(file, `${groupName}.${key} array control has no item schema; Showcase will use JSON fallback`)
+    }
+    if (control.type === 'image') {
+      const value = control.default
+      if (!value || typeof value !== 'object' || typeof value.src !== 'string' || typeof value.alt !== 'string') {
+        fail(file, `${groupName}.${key} image control default must be { "src": "", "alt": "" }`)
+      }
     }
     if (!Object.hasOwn(control, 'default')) warn(file, `${groupName}.${key} has no default`)
   }

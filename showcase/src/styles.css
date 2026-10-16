@@ -890,6 +890,17 @@ a:focus-visible {
   opacity: 0.55;
 }
 
+.image-control {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.image-control__label {
+  color: var(--muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
 .control__stress {
   display: flex;
   flex-wrap: wrap;

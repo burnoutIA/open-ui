@@ -48,7 +48,12 @@ for (const entry of entries) {
         await page.unroute(pageUrl)
       } else {
         await page.goto('/showcase/preview.html', { waitUntil: 'networkidle' })
-        await page.evaluate((markup) => { document.querySelector('#preview-root').innerHTML = markup }, html)
+        await page.evaluate(({ markup, level }) => {
+          const root = document.querySelector('#preview-root')
+          root.dataset.level = level
+          document.body.dataset.entryType = 'component'
+          root.innerHTML = markup
+        }, { markup: html, level: entry.level })
       }
 
       const violations = await runAxe(page, entry.type === 'page' ? 'html' : '#preview-root')

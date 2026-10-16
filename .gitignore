@@ -14,3 +14,4 @@ dev/
 .openui/snapshots/
 test-results/
 playwright-report/
+.openui/fake-images/

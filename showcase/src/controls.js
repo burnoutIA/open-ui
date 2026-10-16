@@ -151,6 +151,11 @@ function createControl(groupName, key, control, value, onChange, idPrefix = 'con
     return wrapper
   }
 
+  if (control.type === 'image') {
+    appendStressable(wrapper, key, control, value, onChange, (initial, change) => createImageField(id, key, control, initial, change))
+    return wrapper
+  }
+
   if (control.type === 'array') {
     appendStressable(wrapper, key, control, value, onChange, (initial, change) => {
       let editor = createArrayEditor(id, key, control, initial, change, label.id)
@@ -289,6 +294,45 @@ function createText(id, key, value, onChange, control) {
   input.value = value == null ? '' : String(value)
   input.addEventListener('input', () => onChange(key, input.value, control))
   return input
+}
+
+// Image : source et texte alternatif ; un texte alternatif vide déclare l'image décorative.
+function createImageField(id, key, control, value, onChange) {
+  const box = document.createElement('div')
+  box.className = 'image-control'
+  let current = { src: value?.src ?? '', alt: value?.alt ?? '' }
+
+  const src = document.createElement('input')
+  src.id = id
+  src.name = `${key}.src`
+  src.type = 'text'
+  src.placeholder = '/__openui/fake-image/1600x900.svg'
+
+  const altId = `${id}-alt`
+  const altLabel = document.createElement('label')
+  altLabel.className = 'image-control__label'
+  altLabel.htmlFor = altId
+  altLabel.textContent = 'Texte alternatif (vide = décorative)'
+
+  const alt = document.createElement('input')
+  alt.id = altId
+  alt.name = `${key}.alt`
+  alt.type = 'text'
+
+  const show = (next) => {
+    current = { src: next?.src ?? '', alt: next?.alt ?? '' }
+    src.value = current.src
+    alt.value = current.alt
+  }
+  show(current)
+
+  src.addEventListener('input', () => onChange(key, { ...current, src: src.value }, control))
+  alt.addEventListener('input', () => onChange(key, { ...current, alt: alt.value }, control))
+  // Garder `current` à jour après chaque saisie.
+  for (const input of [src, alt]) input.addEventListener('input', () => { current = { src: src.value, alt: alt.value } })
+
+  box.append(src, altLabel, alt)
+  return { element: box, show }
 }
 
 function createColor(id, key, control, value, onChange) {
