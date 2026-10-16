@@ -11,7 +11,7 @@ scripts/
 showcase/
 skill-src/
 GUIDELINES_AI.md
-.node_modules
+node_modules/
 image.png
 MEMORY.md
 openui.config.json
