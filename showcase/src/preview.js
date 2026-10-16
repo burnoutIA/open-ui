@@ -108,11 +108,13 @@ async function runAccessibilityAudit(revision) {
   try {
     axeModulePromise ??= import('axe-core').then((module) => module.default)
     const axe = await axeModulePromise
-    const auditTarget = document.body.dataset.entryType === 'page'
-      ? pageFrame.contentDocument
-      : root
-    if (!auditTarget) throw new Error('Le document de prÃ©visualisation est indisponible.')
-    const results = await axe.run(auditTarget, {
+    const isPage = document.body.dataset.entryType === 'page'
+    const auditTarget = isPage ? pageFrame.contentDocument : root
+    if (!auditTarget) throw new Error('Le document de prévisualisation est indisponible.')
+    // Une page vit dans sa propre iframe : axe doit tourner dans ce document, pas depuis l'aperçu
+    // (un document d'un autre contexte JS est refusé par axe.run).
+    const runner = isPage ? injectAxe(pageFrame, axe.source) : axe
+    const results = await runner.run(auditTarget, {
       resultTypes: ['violations', 'incomplete', 'passes']
     })
 
@@ -128,6 +130,16 @@ async function runAccessibilityAudit(revision) {
       error: error.message
     })
   }
+}
+
+function injectAxe(frame, source) {
+  const frameWindow = frame.contentWindow
+  if (!frameWindow.axe) {
+    const script = frame.contentDocument.createElement('script')
+    script.textContent = source
+    frame.contentDocument.head.append(script)
+  }
+  return frameWindow.axe
 }
 
 function reportHeight() {
@@ -160,7 +172,7 @@ function mountPage(html, entry, revision) {
   root.hidden = true
   root.replaceChildren()
   pageFrame.hidden = false
-  pageFrame.title = `PrÃ©visualisation de la page ${entry.name}`
+  pageFrame.title = `Prévisualisation de la page ${entry.name}`
 
   return new Promise((resolve) => {
     pageFrame.addEventListener('load', () => {
@@ -203,8 +215,9 @@ function preventPageNavigation(event) {
 }
 
 function syncPageHeight() {
+  // Pleine hauteur du contenu : seule la zone d'aperçu du Showcase défile, jamais l'iframe de la page.
   const contentHeight = pageFrame.contentDocument?.documentElement.scrollHeight ?? 720
-  const pageHeight = Math.max(720, Math.min(Math.ceil(contentHeight), 900))
+  const pageHeight = Math.max(720, Math.ceil(contentHeight))
   pageFrame.style.height = `${pageHeight}px`
   return pageHeight
 }

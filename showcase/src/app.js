@@ -203,7 +203,7 @@ function selectEntry(entryKey, updateHash = true) {
 
   if (updateHash) history.replaceState(null, '', `#${encodeURIComponent(entry.key)}`)
 
-  elements.componentMeta.textContent = `${entry.type === 'page' ? 'page' : entry.level} · ${entry.category} · ${entry.id}`
+  elements.componentMeta.textContent = [entry.type === 'page' ? 'page' : entry.level, entry.category, entry.id].filter(Boolean).join(' · ')
   elements.componentTitle.textContent = entry.name
   elements.componentDescription.textContent = entry.description
   elements.previewFrame.title = `Prévisualisation de ${entry.type === 'page' ? 'la page' : 'du composant'} ${entry.name}`
