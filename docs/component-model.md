@@ -16,7 +16,8 @@ Open UI est un workspace de design system agent-first. Le modele composant doit 
 - Les styles suivent le mode de `openui.config.json` : feuille `_[name].scss` importee dans le point d'entree en SCSS (`docs/styling-scss.md`), classes utilitaires dans le Twig en Tailwind (`docs/styling-tailwind.md`).
 - Un composant doit etre reutilise avant d'etre recree.
 - Modifier une page signifie souvent modifier un composant ou une configuration de composant, pas patcher la page directement.
-- Une page canonique vit dans `dev/pages/` avec au minimum `[name].json` et `[name].twig`. Elle utilise les mêmes groupes `variants` et `content` qu'un composant pour exposer ses variables dans le Showcase.
+- Une page canonique vit dans `dev/pages/` avec au minimum `[name].json` et `[name].twig`. Elle etend un gabarit de `dev/layouts/` (`{% extends %}`) qui porte le document, le header et le footer ; les donnees partagees (nom du site, navigation, liens legaux) viennent de `dev/data/site.json`, exposees sous `site`.
+- Les valeurs par defaut d'un composant ou d'une page viennent uniquement de son JSON : le moteur les injecte quand une prop n'est pas passee, y compris dans un `include ... only`. Elle utilise les mêmes groupes `variants` et `content` qu'un composant pour exposer ses variables dans le Showcase.
 - Le Showcase catalogue composants et pages. Une page y est rendue comme un document HTML complet afin de conserver sa langue, son titre, ses landmarks et sa structure globale pour les contrôles Axe et W3C.
 
 ## Index persistant

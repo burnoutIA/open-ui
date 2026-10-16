@@ -178,6 +178,10 @@ Créer un composant canonique seulement si la réutilisation ou une variante exi
 - styles selon le mode configuré : `_<name>.scss` importé dans le point d'entrée en SCSS, tables de classes complètes dans le Twig en Tailwind ;
 - relations documentées si le composant contient ou référence d'autres composants.
 
+Valeurs par défaut : uniquement dans le JSON (vraies valeurs, pas un contenu de démo), injectées par le moteur ; ne pas les répéter en `|default()` dans le Twig.
+
+Pages : `dev/pages/<name>.twig` étend un gabarit de `dev/layouts/` et remplit ses blocs ; navigation et données communes dans `dev/data/site.json` (`site`). Ne jamais recopier `head`, header et footer dans une page.
+
 ## Esquisses
 
 Une esquisse explore une maquette ou idée. Elle ne doit pas être présentée comme composant canonique tant qu'elle n'a pas été consolidée. Marquer clairement son statut exploratoire.

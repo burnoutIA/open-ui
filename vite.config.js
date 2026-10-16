@@ -1,13 +1,13 @@
 import fs from 'fs'
 import path from 'path'
 import { defineConfig } from 'vite'
-import Twig from 'twig'
 import { SHOWCASE_API } from './showcase/shared/protocol.js'
 import { getShowcaseCatalog, getShowcaseEntry, normalizeShowcaseProps } from './showcase/server/catalog.js'
 import { readJsonBody, sendJson } from './showcase/server/http.js'
 import { EMPTY_PROJECT_SCRIPT, EMPTY_PROJECT_STYLESHEET } from './showcase/server/project-style.js'
 import { validateHtmlWithW3c } from './showcase/server/html-validator.js'
 import { loadOpenUIConfig } from './scripts/openui-config.js'
+import { renderTwig as renderTwigFile } from './scripts/twig-renderer.js'
 
 const ROOT = process.cwd()
 const CONFIG = loadOpenUIConfig(ROOT)
@@ -25,16 +25,8 @@ const PROJECT_SCRIPT = CONFIG.scriptEntry
 const PROJECT_SCRIPT_ID = 'virtual:openui-project-scripts'
 const RESOLVED_PROJECT_SCRIPT_ID = `\0${PROJECT_SCRIPT_ID}.js`
 
-// Les includes utilisent des chemins depuis la racine ('dev/components/...')
-// settings.views = ROOT indique à twig 3.x d'utiliser ROOT comme base de résolution.
 function renderTwig(filePath, data = {}) {
-  return new Promise((resolve, reject) => {
-    Twig.cache(false)
-    Twig.renderFile(filePath, { ...data, settings: { views: ROOT } }, (err, html) => {
-      if (err) reject(err)
-      else resolve(html)
-    })
-  })
+  return renderTwigFile(ROOT, filePath, data)
 }
 
 function copySketchesToPublic() {

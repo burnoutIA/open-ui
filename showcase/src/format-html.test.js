@@ -39,6 +39,12 @@ describe('formatHtml', () => {
     ].join('\n'))
   })
 
+  it('passe à la ligne entre éléments en ligne d’un bloc sans texte direct', () => {
+    expect(formatHtml('<div class="f"><label for="n">Nom</label>\n  <input id="n"></div>'))
+      .toBe('<div class="f">\n  <label for="n">Nom</label>\n  <input id="n">\n</div>')
+    expect(formatHtml('<p>Texte <a href="/">lien</a>\n <b>gras</b></p>')).toBe('<p>Texte <a href="/">lien</a> <b>gras</b></p>')
+  })
+
   it('ne coupe pas les éléments vides, les attributs avec > ni le contenu brut', () => {
     expect(formatHtml('<div>\n<input type="text" data-x="a>b">\n</div>')).toBe('<div><input type="text" data-x="a>b"></div>')
     expect(formatHtml('<div><pre>  a\n    b</pre></div>')).toBe('<div>\n  <pre>  a\n    b</pre>\n</div>')

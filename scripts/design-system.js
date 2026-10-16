@@ -97,12 +97,21 @@ export function collectRefs(schema) {
   return [...refs].sort()
 }
 
-export function collectTwigIncludes(twigPath) {
-  if (!fs.existsSync(twigPath)) return []
-  const content = fs.readFileSync(twigPath, 'utf8')
+// Composants utilisés par un Twig, en suivant les gabarits et fragments (extends, embed, include hors composant) :
+// une page qui étend dev/layouts/base.twig utilise aussi le header et le footer du gabarit.
+export function collectTwigIncludes(twigPath, visited = new Set()) {
+  const resolved = path.resolve(twigPath)
+  if (visited.has(resolved) || !fs.existsSync(resolved)) return []
+  visited.add(resolved)
+
+  const content = fs.readFileSync(resolved, 'utf8')
   const refs = new Set()
-  const includeRe = /include\s+['"]dev\/components\/([^/]+)\/[^'"]+['"]/g
-  for (const match of content.matchAll(includeRe)) refs.add(match[1])
+  const templateRe = /\b(?:include|extends|embed|import|from)\s+['"]([^'"]+\.twig)['"]/g
+  for (const [, template] of content.matchAll(templateRe)) {
+    const component = template.match(/^dev\/components\/([^/]+)\//)
+    if (component) refs.add(component[1])
+    else for (const ref of collectTwigIncludes(path.join(ROOT, template), visited)) refs.add(ref)
+  }
   return [...refs].sort()
 }
 

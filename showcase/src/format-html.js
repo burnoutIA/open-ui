@@ -74,6 +74,19 @@ function hasBlockChild(node) {
   return node.children?.some((child) => child.block)
 }
 
+// Bloc sans texte direct dont les éléments sont séparés par des blancs (label + input, icône + texte…) :
+// un élément par ligne ne change pas le rendu.
+// Blocs de texte (paragraphe, titre, item…) : leur contenu reste sur une ligne, comme on le lit.
+const TEXT_BLOCKS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'dt', 'dd', 'th', 'td', 'caption', 'figcaption', 'legend', 'summary', 'title'])
+
+function isElementList(node) {
+  if (TEXT_BLOCKS.has(node.name)) return false
+  const children = node.children ?? []
+  const hasText = children.some((child) => child.text !== undefined && child.text.trim())
+  const hasGap = children.some((child) => child.text !== undefined && !child.text.trim())
+  return !hasText && hasGap && children.filter((child) => child.name).length > 1
+}
+
 function serialize(nodes, depth) {
   const pad = '  '.repeat(depth)
   const lines = []
@@ -101,7 +114,7 @@ function serialize(nodes, depth) {
       lines.push(pad + (node.name ? `${node.tag}${node.raw}</${node.name}>` : node.raw))
     } else if (VOID.has(node.name) || node.tag.endsWith('/>')) {
       lines.push(pad + node.tag)
-    } else if (!hasBlockChild(node)) {
+    } else if (!hasBlockChild(node) && !isElementList(node)) {
       lines.push(pad + node.tag + node.children.map(inline).join('').replace(/^\s+|\s+$/g, '') + `</${node.name}>`)
     } else {
       lines.push(pad + node.tag, ...serialize(node.children, depth + 1), `${pad}</${node.name}>`)

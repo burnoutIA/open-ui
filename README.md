@@ -96,7 +96,7 @@ Le JSON décrit les métadonnées, variantes et contenus modifiables. Le Showcas
 
 Le contrat complet est documenté dans [GUIDELINES_AI.md](./GUIDELINES_AI.md) et [docs/component-model.md](./docs/component-model.md).
 
-Une page suit le même principe dans `dev/pages/` : `[nom].json` expose ses variantes et contenus, tandis que `[nom].twig` produit un document HTML complet. Le Showcase la présente dans une section `Pages` distincte et rerend le document à chaque modification.
+Une page suit le même principe dans `dev/pages/` : `[nom].json` expose ses variantes et contenus, et `[nom].twig` étend un gabarit de `dev/layouts/` (document, header, footer) en remplissant ses blocs. Les données communes aux pages (nom du site, navigation, liens légaux) vivent dans `dev/data/site.json`. Le livrable est le HTML statique et ses assets produits par `npm run build` ; Twig ne sert qu'à composer. Le Showcase la présente dans une section `Pages` distincte et rerend le document à chaque modification.
 
 ## Contrôler la qualité du rendu
 
