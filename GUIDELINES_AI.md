@@ -77,7 +77,9 @@ Valeurs par defaut :
 
 Contenu de demonstration : `"preview": { "prop": valeur }` (facultatif, props declarees seulement). Le Showcase, `snapshot` et le test de bout en bout partent de ces valeurs ; le moteur ne les injecte jamais dans une page. A utiliser quand le defaut reel rend le composant vide ou peu parlant (liste d'erreurs vide, champ sans libelle).
 
-Relations : un `include` Twig suffit, le graphe le detecte (`npm run impact [nom]`). Declarer une composition dans le JSON (`parts`, `collections`...) est facultatif : voir `docs/component-composition.md`.
+Relations : un `include` Twig suffit, le graphe le detecte (`npm run impact [nom]`).
+
+**Regle - composants d'une page** : ne jamais les declarer dans le JSON de la page (pas de `parts`, `instances`, `families`, `layoutGroups`, pas de props recopiees comme `nameLabel`). Chaque composant pose par une page ou un gabarit avec `with { ... } only` est detecte au rendu, et le Showcase le presente comme une instance modifiable et stressable (section « Composants de la page »). Le JSON d'une page ne declare que ses propres variantes et contenus. `npm run health` signale une composition declaree et un composant pose sans `with { ... } only`.
 
 ---
 
@@ -187,6 +189,7 @@ Page : `lang`, `title` explicite, un `main`, titres hierarchises, `nav` nommees 
 | Valeur CSS en dur ou couleur de palette | Un role ou une echelle de tokens |
 | `outline: none` sans alternative | Focus visible selon la doc du mode |
 | Page qui recopie `head`, header et footer | `{% extends 'dev/layouts/base.twig' %}` |
+| Props d'un composant recopiees dans le JSON de la page (`nameLabel`, `parts`, `instances`...) | Rien a declarer : le Showcase detecte les composants de la page |
 | Atom qui inclut une molecule | Composition descendante |
 
 ---

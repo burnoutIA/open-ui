@@ -86,3 +86,24 @@ for (const entry of entries) {
     expect(errors, 'erreurs JavaScript').toEqual([])
   })
 }
+
+for (const entry of entries.filter((candidate) => candidate.type === 'page')) {
+  test(`page ${entry.id} : ses composants se modifient depuis le Showcase`, async ({ page }) => {
+    const errors = collectPageErrors(page)
+    await page.goto(`/showcase/#${encodeURIComponent(`page:${entry.id}`)}`)
+
+    const instances = page.locator('#instances-container details')
+    await expect(instances.first(), 'composants de la page détectés au rendu').toBeVisible({ timeout: 20_000 })
+
+    // Première instance qui a un texte stressable : son stress doit changer le rendu de la page.
+    const stressable = instances.filter({ has: page.locator('.control__stress') }).first()
+    await stressable.locator('summary').click()
+    const pageFrame = () => page.frames().find((frame) => frame.parentFrame()?.url().includes('/showcase/preview.html'))
+    await stressable.locator('.control__stress .stress-button').first().click()
+    await expect.poll(async () => (await pageFrame()?.content()) ?? '', { timeout: 10_000 }).toContain('Lorem ipsum dolor')
+
+    await stressable.locator('.control__stress .stress-button').nth(1).click()
+    await expect.poll(async () => (await pageFrame()?.content()) ?? '', { timeout: 10_000 }).not.toContain('Lorem ipsum dolor')
+    expect(errors, 'erreurs JavaScript').toEqual([])
+  })
+}

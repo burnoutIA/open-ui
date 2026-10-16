@@ -142,6 +142,33 @@ function checkPage(page) {
   checkControls(jsonPath, 'content', schema.content)
   checkRefs(jsonPath, collectRefs(schema))
   checkRefs(twigPath, collectTwigIncludes(twigPath))
+
+  // Les composants d'une page sont détectés au rendu et modifiables dans le Showcase : rien à déclarer.
+  const declared = ['parts', 'collections', 'families', 'instances', 'layoutGroups'].filter((key) => schema[key])
+  if (declared.length) {
+    add('warn', 'pages', jsonPath, `Composition déclarée inutile : ${declared.join(', ')}`, 'les composants de la page sont détectés à partir de ses include')
+  }
+  checkComposingTemplate(twigPath)
+}
+
+// Page ou gabarit : chaque composant posé avec `with { ... } only`, pour qu'il ne reçoive que ses props
+// et que le Showcase le présente comme une instance modifiable.
+function checkComposingTemplate(templatePath) {
+  if (!fs.existsSync(templatePath)) return
+  const content = fs.readFileSync(templatePath, 'utf8')
+  for (const [tag, template] of content.matchAll(/\{%-?\s*include\s+['"](dev\/components\/[^'"]+)['"]([\s\S]*?)-?%\}/g)) {
+    if (!/\swith\s[\s\S]*\sonly\s*-?%\}$/.test(tag)) {
+      add('warn', 'pages', templatePath, `Composant posé sans \`with { ... } only\` : ${template}`, 'il hérite du contexte de la page')
+    }
+  }
+}
+
+const LAYOUTS_DIR = path.join(process.cwd(), 'dev/layouts')
+function checkLayouts() {
+  if (!fs.existsSync(LAYOUTS_DIR)) return
+  for (const file of fs.readdirSync(LAYOUTS_DIR).filter((name) => name.endsWith('.twig'))) {
+    checkComposingTemplate(path.join(LAYOUTS_DIR, file))
+  }
 }
 
 // Un workspace vide est valide : le point d'entrée SCSS ne devient obligatoire qu'avec du contenu.
@@ -161,6 +188,7 @@ function checkTokens() {
 }
 
 checkTokens()
+checkLayouts()
 for (const component of components) checkComponent(component)
 for (const page of pages) checkPage(page)
 

@@ -25,8 +25,8 @@ const PROJECT_SCRIPT = CONFIG.scriptEntry
 const PROJECT_SCRIPT_ID = 'virtual:openui-project-scripts'
 const RESOLVED_PROJECT_SCRIPT_ID = `\0${PROJECT_SCRIPT_ID}.js`
 
-function renderTwig(filePath, data = {}) {
-  return renderTwigFile(ROOT, filePath, data)
+function renderTwig(filePath, data = {}, instances = null) {
+  return renderTwigFile(ROOT, filePath, data, instances)
 }
 
 function copySketchesToPublic() {
@@ -250,7 +250,11 @@ function openUIPlugin() {
             }
 
             const props = normalizeShowcaseProps(entry.schema, payload.props)
-            const html = await renderTwig(entry.twigPath, props)
+            // Page : composants posés par la page et son gabarit, modifiables un par un depuis le Showcase.
+            const instances = entryType === 'page'
+              ? { overrides: payload.instanceOverrides && typeof payload.instanceOverrides === 'object' ? payload.instanceOverrides : {} }
+              : null
+            const html = await renderTwig(entry.twigPath, props, instances)
             sendJson(res, 200, {
               html,
               entry: {
@@ -260,7 +264,8 @@ function openUIPlugin() {
                 name: entry.schema.name,
                 level: entryType === 'page' ? 'page' : entry.schema.level
               },
-              props
+              props,
+              instances: instances?.instances ?? []
             })
           } catch (error) {
             sendJson(res, 422, { error: error.message })

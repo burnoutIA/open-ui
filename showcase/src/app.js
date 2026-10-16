@@ -24,6 +24,7 @@ const elements = {
   reset: document.querySelector('#reset-controls'),
   empty: document.querySelector('#inspector-empty'),
   controls: document.querySelector('#controls-container'),
+  instances: document.querySelector('#instances-container'),
   composition: document.querySelector('#composition-container'),
   propsOutput: document.querySelector('#props-output'),
   previewFrame: document.querySelector('#preview-frame'),
@@ -57,6 +58,9 @@ const state = {
   entries: [],
   selected: null,
   props: {},
+  // Page : modifications temporaires par instance de composant, indexées par clé d'instance.
+  instanceOverrides: {},
+  instancesSignature: '',
   previewReady: false,
   renderTimer: null,
   renderRevision: 0,
@@ -200,6 +204,7 @@ function selectEntry(entryKey, updateHash = true) {
 
   state.selected = entry
   state.props = getComponentDefaults(entry)
+  clearInstances()
   enableEntryWorkspace()
 
   if (updateHash) history.replaceState(null, '', `#${encodeURIComponent(entry.key)}`)
@@ -268,6 +273,7 @@ function updateProp(key, value) {
 function resetSelectedEntry() {
   if (!state.selected) return
   state.props = getComponentDefaults(state.selected)
+  clearInstances()
   forgetSelectedQualityReport()
   renderControls(elements.controls, state.selected, state.props, updateProp)
   updatePropsOutput()
@@ -275,7 +281,71 @@ function resetSelectedEntry() {
 }
 
 function updatePropsOutput() {
-  elements.propsOutput.textContent = JSON.stringify(state.props, null, 2)
+  const output = Object.keys(state.instanceOverrides).length
+    ? { ...state.props, instances: state.instanceOverrides }
+    : state.props
+  elements.propsOutput.textContent = JSON.stringify(output, null, 2)
+}
+
+function clearInstances() {
+  state.instanceOverrides = {}
+  state.instancesSignature = ''
+  elements.instances.replaceChildren()
+}
+
+// Composants posés par une page et son gabarit, détectés au rendu : chacun se modifie (et se stresse)
+// sans rien déclarer dans le JSON de la page. Les panneaux ne sont reconstruits que si la liste change,
+// pour ne pas perdre la saisie en cours.
+function renderInstances(instances) {
+  if (state.selected?.type !== 'page') return
+  const signature = instances.map((instance) => instance.key).join('|')
+  if (signature === state.instancesSignature) return
+  state.instancesSignature = signature
+  elements.instances.replaceChildren()
+  if (!instances.length) return
+
+  const section = document.createElement('section')
+  section.className = 'composition'
+  section.setAttribute('aria-labelledby', 'instances-title')
+
+  const title = document.createElement('h3')
+  title.className = 'composition__title'
+  title.id = 'instances-title'
+  title.textContent = 'Composants de la page'
+  section.append(title)
+
+  instances.forEach((instance, index) => {
+    const schema = state.entries.find((entry) => entry.type === 'component' && entry.id === instance.component)
+    if (!schema) return
+
+    const details = document.createElement('details')
+    details.className = 'relation-group'
+    details.dataset.instanceKey = instance.key
+
+    const summary = document.createElement('summary')
+    const hint = ['label', 'text', 'title', 'siteName'].map((name) => instance.props[name]).find((value) => typeof value === 'string' && value)
+    summary.textContent = hint ? `${schema.name} · ${hint}` : schema.name
+    details.append(summary)
+
+    const body = document.createElement('div')
+    body.className = 'instance-controls'
+    // Valeurs effectives : vrais défauts du composant (pas son `preview`), props passées par la page, modifications.
+    const values = {
+      ...getComponentDefaults({ ...schema, preview: undefined }),
+      ...instance.props,
+      ...state.instanceOverrides[instance.key]
+    }
+    renderControls(body, schema, values, (prop, value) => {
+      state.instanceOverrides[instance.key] = { ...state.instanceOverrides[instance.key], [prop]: value }
+      forgetSelectedQualityReport()
+      updatePropsOutput()
+      scheduleRender(false)
+    }, { idPrefix: `instance-${index}` })
+    details.append(body)
+    section.append(details)
+  })
+
+  elements.instances.append(section)
 }
 
 function scheduleRender(immediate) {
@@ -302,6 +372,7 @@ function sendRender() {
     entryType: state.selected.type,
     entryId: state.selected.id,
     props: state.props,
+    instanceOverrides: state.instanceOverrides,
     revision: state.renderRevision
   }, location.origin)
 }
@@ -724,6 +795,7 @@ function handlePreviewMessage(event) {
     if (!isCurrentRender(event.data.revision, state.renderRevision)) return
     elements.renderStatus.textContent = 'Rendu à jour'
     updateRenderedHtml(event.data.html)
+    renderInstances(event.data.instances ?? [])
     scheduleAutomaticAxeCheck()
     return
   }

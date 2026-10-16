@@ -7,6 +7,8 @@
 > - `binding`, `autoBind`, `exclude` et les `defaults` de ces noeuds ne sont exploites par **aucun outil** : le Twig parent cable lui-meme les props de l'enfant. Les utiliser seulement comme documentation, ou les faire exploiter avant d'en dependre.
 >
 > Dans la plupart des cas, un `include` Twig suffit : la relation est detectee sans rien declarer.
+>
+> **Pages : ne rien declarer.** Les composants poses par une page ou un gabarit (`include ... with { ... } only`) sont detectes au rendu et modifiables un par un dans le Showcase (« Composants de la page »). Declarer `parts`, `instances`, `families` ou `layoutGroups` dans le JSON d'une page est inutile, et `npm run health` le signale.
 
 ## `parts`
 

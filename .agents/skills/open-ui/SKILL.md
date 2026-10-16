@@ -182,6 +182,8 @@ Valeurs par défaut : uniquement dans le JSON (vraies valeurs, pas un contenu de
 
 Pages : `dev/pages/<name>.twig` étend un gabarit de `dev/layouts/` et remplit ses blocs ; navigation et données communes dans `dev/data/site.json` (`site`). Ne jamais recopier `head`, header et footer dans une page.
 
+Composants d'une page : les poser avec `include ... with { ... } only` et **ne jamais les déclarer dans le JSON de la page** (ni `parts`/`instances`/`families`/`layoutGroups`, ni props recopiées du type `nameLabel`). Le Showcase les détecte au rendu et les rend modifiables et stressables un par un ; le JSON de la page ne porte que ses propres variantes et contenus. `npm run health` signale l'écart.
+
 ## Esquisses
 
 Une esquisse explore une maquette ou idée. Elle ne doit pas être présentée comme composant canonique tant qu'elle n'a pas été consolidée. Marquer clairement son statut exploratoire.

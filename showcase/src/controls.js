@@ -27,7 +27,7 @@ export function getComponentDefaults(component) {
   return defaults
 }
 
-export function renderControls(container, component, values, onChange) {
+export function renderControls(container, component, values, onChange, { idPrefix = 'control' } = {}) {
   container.replaceChildren()
 
   for (const group of CONTROL_GROUPS) {
@@ -42,7 +42,7 @@ export function renderControls(container, component, values, onChange) {
     fieldset.append(legend)
 
     for (const [key, control] of controls) {
-      fieldset.append(createControl(group.key, key, control, values[key], onChange))
+      fieldset.append(createControl(group.key, key, control, values[key], onChange, idPrefix))
     }
 
     container.append(fieldset)
@@ -89,8 +89,8 @@ export function renderComposition(container, component) {
   container.append(section)
 }
 
-function createControl(groupName, key, control, value, onChange) {
-  const id = `control-${safeId(groupName)}-${safeId(key)}`
+function createControl(groupName, key, control, value, onChange, idPrefix = 'control') {
+  const id = `${idPrefix}-${safeId(groupName)}-${safeId(key)}`
 
   if (control.type === 'checkbox') {
     const wrapper = document.createElement('div')

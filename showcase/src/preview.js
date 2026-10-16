@@ -66,7 +66,8 @@ async function handleMessage(event) {
       body: JSON.stringify({
         entryType: event.data.entryType,
         entryId: event.data.entryId,
-        props: event.data.props
+        props: event.data.props,
+        instanceOverrides: event.data.instanceOverrides
       }),
       signal: activeRequest.signal
     })
@@ -85,6 +86,7 @@ async function handleMessage(event) {
       entryKey: payload.entry.key,
       entryType: payload.entry.type,
       html: payload.html,
+      instances: payload.instances ?? [],
       revision
     })
     requestAnimationFrame(reportHeight)
