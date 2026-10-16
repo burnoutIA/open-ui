@@ -11,12 +11,14 @@ const RELATION_GROUPS = [
   { key: 'layoutGroups', label: 'Groupes de layout' }
 ]
 
+// Valeurs de départ dans le Showcase : défauts réels du JSON, remplacés par `preview` (contenu de démonstration
+// facultatif, jamais injecté dans une page) pour qu'un composant vide par défaut reste visible.
 export function getComponentDefaults(component) {
   const defaults = {}
 
   for (const group of CONTROL_GROUPS) {
     for (const [key, control] of Object.entries(component[group.key] ?? {})) {
-      defaults[key] = cloneValue(control.default)
+      defaults[key] = cloneValue(Object.hasOwn(component.preview ?? {}, key) ? component.preview[key] : control.default)
     }
   }
 

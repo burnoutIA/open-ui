@@ -28,8 +28,10 @@ function parseArgs(argv) {
 }
 
 // Une case par état utile : défauts, chaque option de select, chaque checkbox activée.
+// Chaque cas part de `preview` (démonstration du JSON), comme le Showcase.
 export function buildCases(entry, extraProps = []) {
-  const cases = [{ label: 'défaut', props: {} }]
+  const preview = entry.preview ?? {}
+  const cases = [{ label: Object.keys(preview).length ? 'aperçu' : 'défaut', props: {} }]
   for (const props of extraProps) cases.push({ label: JSON.stringify(props), props })
   for (const [key, control] of Object.entries(entry.variants ?? {})) {
     if (control.type === 'select') {
@@ -41,7 +43,7 @@ export function buildCases(entry, extraProps = []) {
       cases.push({ label: `${key}`, props: { [key]: true } })
     }
   }
-  return cases
+  return cases.map((testCase) => ({ ...testCase, props: { ...preview, ...testCase.props } }))
 }
 
 async function isReachable(url) {

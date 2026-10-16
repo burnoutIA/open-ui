@@ -74,6 +74,8 @@ Valeurs par defaut :
 - une valeur passee, meme `''` ou `false`, est respectee ;
 - ne pas repeter le defaut dans le Twig ; un `{% set %}` ne sert qu'aux valeurs derivees (`{% set name = name is empty ? id : name %}`).
 
+Contenu de demonstration : `"preview": { "prop": valeur }` (facultatif, props declarees seulement). Le Showcase, `snapshot` et le test de bout en bout partent de ces valeurs ; le moteur ne les injecte jamais dans une page. A utiliser quand le defaut reel rend le composant vide ou peu parlant (liste d'erreurs vide, champ sans libelle).
+
 Relations : un `include` Twig suffit, le graphe le detecte (`npm run impact [nom]`). Declarer une composition dans le JSON (`parts`, `collections`...) est facultatif : voir `docs/component-composition.md`.
 
 ---

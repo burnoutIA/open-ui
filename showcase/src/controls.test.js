@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createArrayItemDefault, resolveArrayItemSchema } from './controls.js'
+import { createArrayItemDefault, getComponentDefaults, resolveArrayItemSchema } from './controls.js'
 
 describe('array controls', () => {
   it('utilise le schéma item explicite pour une liste vide', () => {
@@ -39,5 +39,16 @@ describe('array controls', () => {
 
   it('conserve le repli JSON pour une liste vide dont la forme est inconnue', () => {
     expect(resolveArrayItemSchema({ type: 'array', default: [] }, [])).toBeNull()
+  })
+})
+
+describe('valeurs de départ du Showcase', () => {
+  it('remplace les défauts par preview, seulement pour les props déclarées', () => {
+    const component = {
+      variants: { tone: { type: 'select', default: 'info', options: ['info', 'danger'] } },
+      content: { errors: { type: 'array', default: [] } },
+      preview: { errors: [{ field: 'email', message: 'Erreur' }] }
+    }
+    expect(getComponentDefaults(component)).toEqual({ tone: 'info', errors: [{ field: 'email', message: 'Erreur' }] })
   })
 })

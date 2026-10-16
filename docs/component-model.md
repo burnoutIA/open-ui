@@ -17,6 +17,7 @@ Open UI est un workspace de design system agent-first. Le modele composant doit 
 - Un composant doit etre reutilise avant d'etre recree.
 - Modifier une page signifie souvent modifier un composant ou une configuration de composant, pas patcher la page directement.
 - Une page canonique vit dans `dev/pages/` avec au minimum `[name].json` et `[name].twig`. Elle etend un gabarit de `dev/layouts/` (`{% extends %}`) qui porte le document, le header et le footer ; les donnees partagees (nom du site, navigation, liens legaux) viennent de `dev/data/site.json`, exposees sous `site`.
+- `preview` (facultatif) donne des valeurs de demonstration au Showcase, a `snapshot` et au test de bout en bout, sans jamais etre injecte dans une page : il separe le contenu de demo des vrais defauts.
 - Les valeurs par defaut d'un composant ou d'une page viennent uniquement de son JSON : le moteur les injecte quand une prop n'est pas passee, y compris dans un `include ... only`. Elle utilise les mêmes groupes `variants` et `content` qu'un composant pour exposer ses variables dans le Showcase.
 - Le Showcase catalogue composants et pages. Une page y est rendue comme un document HTML complet afin de conserver sa langue, son titre, ses landmarks et sa structure globale pour les contrôles Axe et W3C.
 
