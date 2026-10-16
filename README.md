@@ -120,6 +120,15 @@ OPENUI_W3C_VALIDATOR_URL=http://localhost:8888/ npm run dev
 
 Si le service Nu est indisponible, le Showcase affiche un contrôle HTML partiel sans bloquer l’analyse Axe locale.
 
+## Développer l'outil : la branche `workspace`
+
+Ce dépôt produit l'outil : `dev/` y est ignoré pour ne pas livrer nos composants de test. Pour éprouver l'outil sur du vrai contenu, la branche `workspace` versionne un `dev/` peuplé (tokens, composants, gabarit, page).
+
+- **Ne jamais fusionner `workspace` dans `develop` ni dans `main`.** Le sens est toujours `develop` → `workspace`.
+- Tester une évolution de l'outil : `git checkout workspace && git merge develop`, puis `npm run dev`, `npm test`, `npm run snapshot -- <nom>`.
+- Revenir sur `develop` retire `dev/` du dossier de travail : c'est normal, il n'existe que sur `workspace`.
+- Pour garder les deux côte à côte : `git worktree add ../open-ui-workspace workspace`.
+
 ## Architecture
 
 ```text
