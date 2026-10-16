@@ -1,8 +1,8 @@
 node_modules/
 public/
 dist/
-dev/*
-!dev/.gitkeep
+# dev/ est un dépôt git à part (contenu du projet) ; l'outil ne le suit jamais.
+dev/
 .DS_Store
 .env
 .env.*

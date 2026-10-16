@@ -1,10 +1,11 @@
-# Contrôles de l'outil. Sur develop et main, dev/ est vide : on vérifie le workspace de démarrage.
-# Sur workspace, dev/ est peuplé : le test de bout en bout couvre chaque composant et chaque page.
+# Contrôles de l'outil.
+# checks : dev/ absent, comme au démarrage d'un projet.
+# e2e : dev/ cloné depuis open-ui-workspace, comme chez un utilisateur ; chaque composant et chaque page est couvert.
 name: CI
 
 on:
   push:
-    branches: [develop, main, workspace]
+    branches: [develop, main]
   pull_request:
 
 jobs:
@@ -34,5 +35,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: git clone --depth 1 https://github.com/burnoutIA/open-ui-workspace dev
+      - run: npm run validate
+      - run: npm run health
+      - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e

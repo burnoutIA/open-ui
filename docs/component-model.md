@@ -6,7 +6,7 @@ Open UI est un workspace de design system agent-first. Le modele composant doit 
 
 ## Contrat
 
-- `dev/` est la racine structurelle des sources du workspace. Le dépôt conserve uniquement `dev/.gitkeep` ; son contenu projet reste local et ignoré par Git.
+- `dev/` est la racine des sources du projet. L'outil l'ignore entierement : c'est le contenu d'un projet (ici, le workspace de test clone depuis `open-ui-workspace`).
 - Un composant canonique vit dans `dev/components/[name]/`.
 - Chaque composant a trois fichiers obligatoires : `[name].json`, `[name].twig`, `[name].md`.
 - Le JSON est la source de verite des metadonnees, controles, relations et defaults exposables.
@@ -40,7 +40,7 @@ Open UI est un workspace de design system agent-first. Le modele composant doit 
 ## Démarrage à vide
 
 - `showcase/` appartient au moteur versionné et n'est pas généré par le workspace utilisateur.
-- `dev/` peut ne contenir que `.gitkeep`, ou être momentanément absent : la cartographie et le Showcase doivent alors retourner zéro composant et zéro page sans échouer.
+- `dev/` peut être vide ou absent : la cartographie et le Showcase doivent alors retourner zéro composant et zéro page sans échouer.
 - Le point d'entrée des styles (`styleEntry`) devient nécessaire seulement lorsqu'un projet commence à définir ses styles ; le Showcase fournit une feuille vide avant sa création.
 - `public/` n'est jamais un prérequis : `npm run build` le crée comme sortie générée.
 
