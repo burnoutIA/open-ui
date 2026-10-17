@@ -33,7 +33,7 @@ function renderTwig(filePath, data = {}, instances = null) {
 
 // Build : chaque image d'exemple utilisée par une page devient un fichier, que Vite renomme et copie dans les assets.
 const FAKE_IMAGES_DIR = path.join(ROOT, '.openui/fake-images')
-const FAKE_IMAGE_URL = /\/__openui\/fake-image\/\d{1,4}x\d{1,4}\.svg(?:\?label=[^"'\s)]*)?/g
+const FAKE_IMAGE_URL = /\/__openui\/fake-image\/\d{1,4}x\d{1,4}\.svg(?:\?label=[^"\s<>]*)?/g
 
 function materializeFakeImages(html) {
   return html.replace(FAKE_IMAGE_URL, (url) => {

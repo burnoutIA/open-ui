@@ -39,5 +39,7 @@ jobs:
       - run: npm run validate
       - run: npm run health
       - run: npm run build
+      - name: Aucune URL de l'outil dans le HTML livré
+        run: "! grep -nE '__openui|/\\.openui/' public/*.html"
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e

@@ -8,6 +8,12 @@ describe('images d’exemple', () => {
     expect(parseFakeImageUrl(url)).toEqual({ width: 1600, height: 900, label: 'Atelier & co' })
   })
 
+  it('encode l’apostrophe et les parenthèses du libellé', () => {
+    const url = fakeImageUrl(1600, 900, "Rénovation d'un atelier (2026)")
+    expect(url).not.toMatch(/['()]/)
+    expect(parseFakeImageUrl(url).label).toBe("Rénovation d'un atelier (2026)")
+  })
+
   it('refuse une taille invalide ou démesurée', () => {
     expect(parseFakeImageUrl('/__openui/fake-image/0x900.svg')).toBeNull()
     expect(parseFakeImageUrl('/__openui/fake-image/9000x900.svg')).toBeNull()

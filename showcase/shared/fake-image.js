@@ -7,8 +7,13 @@
 export const FAKE_IMAGE_PREFIX = '/__openui/fake-image/'
 const MAX_SIDE = 4000
 
+// Libellé entièrement encodé, apostrophes comprises : l'URL reste sûre dans un attribut HTML.
+function encodeLabel(label) {
+  return encodeURIComponent(label).replace(/['()!*]/g, (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`)
+}
+
 export function fakeImageUrl(width, height, label = '') {
-  const query = label ? `?label=${encodeURIComponent(label)}` : ''
+  const query = label ? `?label=${encodeLabel(label)}` : ''
   return `${FAKE_IMAGE_PREFIX}${Math.round(width)}x${Math.round(height)}.svg${query}`
 }
 
