@@ -9,6 +9,8 @@ import { readJsonBody, sendJson } from './showcase/server/http.js'
 import { EMPTY_PROJECT_SCRIPT, EMPTY_PROJECT_STYLESHEET } from './showcase/server/project-style.js'
 import { validateHtmlWithW3c } from './showcase/server/html-validator.js'
 import { readProjectTokens, renderTokensPage, tokensCatalogEntry } from './showcase/server/tokens.js'
+import { computeSourceVersions } from './showcase/server/source-version.js'
+import { getComponentEntries, getPageEntries } from './scripts/design-system.js'
 import { loadOpenUIConfig } from './scripts/openui-config.js'
 import { renderTwig as renderTwigFile } from './scripts/twig-renderer.js'
 
@@ -250,7 +252,11 @@ function openUIPlugin() {
 
           // Les tokens ouvrent le catalogue : c'est l'étape 1 du design system.
           const tokensEntry = tokensCatalogEntry(CONFIG)
-          const entries = [...(tokensEntry ? [tokensEntry] : []), ...getShowcaseCatalog()]
+          const components = getComponentEntries()
+          const pages = getPageEntries()
+          const versions = computeSourceVersions({ components, pages, config: CONFIG, root: ROOT })
+          const entries = [...(tokensEntry ? [tokensEntry] : []), ...getShowcaseCatalog({ components, pages })]
+            .map((entry) => ({ ...entry, sourceVersion: versions[entry.key] }))
           sendJson(res, 200, {
             entries,
             counts: {

@@ -1,6 +1,7 @@
 import { SHOWCASE_API, SHOWCASE_MESSAGES, SHOWCASE_PREVIEW_SOURCE, SHOWCASE_SOURCE } from '../shared/protocol.js'
 import { getComponentDefaults, renderComposition, renderControls } from './controls.js'
 import { summarizeQualityReport } from './quality-state.js'
+import { contextKey, loadQualityRecord, saveQualityRecord } from './quality-cache.js'
 import { isCurrentRender, normalizeRenderedHtml } from './render-state.js'
 import { highlightHtml } from './html-highlight.js'
 
@@ -98,6 +99,7 @@ async function loadCatalog() {
     if (!response.ok) throw new Error(payload.error ?? 'Catalogue indisponible.')
 
     state.entries = payload.entries ?? []
+    restoreCatalogQuality()
     elements.catalogCount.textContent = String(state.entries.length)
     const componentsCount = payload.counts?.components ?? state.entries.filter((entry) => entry.type === 'component').length
     const pagesCount = payload.counts?.pages ?? state.entries.filter((entry) => entry.type === 'page').length
@@ -456,6 +458,52 @@ function runQualityChecks() {
   runW3cCheck(report)
 }
 
+function currentQualityContext() {
+  return contextKey({
+    props: state.props,
+    instances: state.instanceOverrides,
+    background: elements.background.value,
+    viewport: document.querySelector('input[name="viewport"]:checked')?.value ?? 'auto'
+  })
+}
+
+// Badges du catalogue après un rechargement : derniers résultats encore valables pour les props par défaut.
+function restoreCatalogQuality() {
+  for (const entry of state.entries) {
+    const context = contextKey({
+      props: getComponentDefaults(entry),
+      background: elements.background.value,
+      viewport: document.querySelector('input[name="viewport"]:checked')?.value ?? 'auto'
+    })
+    const cached = loadQualityRecord(entry, context)
+    if (cached) state.qualityReports.set(entry.key, { entryKey: entry.key, ...cached })
+  }
+}
+
+// Après un rendu : reprendre le dernier résultat si les sources et le contexte n'ont pas changé,
+// sinon relancer Axe. Un fichier modifié change l'empreinte des sources (Vite recharge alors la page).
+function checkQualityIfNeeded() {
+  const cached = state.selected && loadQualityRecord(state.selected, currentQualityContext())
+  if (!cached || !state.renderedHtml || !state.previewReady) {
+    scheduleAutomaticAxeCheck()
+    return
+  }
+
+  clearTimeout(state.qualityTimer)
+  const report = {
+    id: ++state.qualityRunId,
+    entryKey: state.selected.key,
+    entryType: state.selected.type,
+    entryName: state.selected.name,
+    revision: state.renderRevision,
+    w3c: cached.w3c,
+    axe: cached.axe,
+    restored: true
+  }
+  state.activeQualityRun = report
+  renderQualityReport(report)
+}
+
 function scheduleAutomaticAxeCheck() {
   clearTimeout(state.qualityTimer)
   if (!state.selected || !state.renderedHtml || !state.previewReady) return
@@ -537,9 +585,11 @@ function renderQualityReport(report) {
 
   elements.qualityPanel.setAttribute('aria-busy', 'false')
   elements.qualityButton.disabled = false
+  if (!report.restored) saveQualityRecord(state.selected, currentQualityContext(), report)
+  const origin = report.restored ? ' Résultat repris : aucune source modifiée depuis le dernier contrôle.' : ''
   elements.qualityLive.textContent = report.w3c.status === 'idle'
-    ? `${summary.label}. Lancez le contrôle du rendu pour vérifier le HTML W3C. Une revue RGAA manuelle reste nécessaire.`
-    : `${summary.label}. Une revue RGAA manuelle reste nécessaire.`
+    ? `${summary.label}.${origin} Lancez le contrôle du rendu pour vérifier le HTML W3C. Une revue RGAA manuelle reste nécessaire.`
+    : `${summary.label}.${origin} Une revue RGAA manuelle reste nécessaire.`
   renderCatalog(elements.search.value)
 }
 
@@ -771,7 +821,7 @@ function sendPreviewSettings() {
   }, location.origin)
   if (state.renderedHtml) {
     forgetSelectedQualityReport()
-    scheduleAutomaticAxeCheck()
+    checkQualityIfNeeded()
   }
 }
 
@@ -782,7 +832,7 @@ function updateViewport(event) {
     : `${event.target.value}px`
   if (state.renderedHtml) {
     forgetSelectedQualityReport()
-    scheduleAutomaticAxeCheck()
+    checkQualityIfNeeded()
   }
 }
 
@@ -803,7 +853,7 @@ function handlePreviewMessage(event) {
     elements.renderStatus.textContent = 'Rendu à jour'
     updateRenderedHtml(event.data.html)
     renderInstances(event.data.instances ?? [])
-    scheduleAutomaticAxeCheck()
+    checkQualityIfNeeded()
     return
   }
 
