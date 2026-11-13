@@ -1396,3 +1396,10 @@ a:focus-visible {
     transition-delay: 0ms !important;
   }
 }
+
+/* Contrôles masqués selon l'entrée (page des tokens) : l'attribut hidden l'emporte sur les display. */
+.quality-action[hidden],
+.quality-badge[hidden],
+.quality-output[hidden] {
+  display: none;
+}

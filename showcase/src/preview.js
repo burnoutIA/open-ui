@@ -100,6 +100,7 @@ async function handleMessage(event) {
       entryType: payload.entry.type,
       html: payload.html,
       instances: payload.instances ?? [],
+      meta: payload.meta ?? null,
       revision
     })
     requestAnimationFrame(reportHeight)

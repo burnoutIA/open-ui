@@ -51,6 +51,9 @@ const elements = {
   w3cResults: document.querySelector('#w3c-results'),
   axeBadge: document.querySelector('#axe-badge'),
   overflowBadge: document.querySelector('#overflow-badge'),
+  rgaaBadge: document.querySelector('#rgaa-badge'),
+  contrastBadge: document.querySelector('#contrast-badge'),
+  qualityAction: document.querySelector('.quality-action'),
   axeSummary: document.querySelector('#axe-summary'),
   axeResults: document.querySelector('#axe-results'),
   background: document.querySelector('#preview-background')
@@ -220,6 +223,8 @@ function selectEntry(entryKey, updateHash = true) {
   elements.previewFrame.title = entry.type === 'tokens'
     ? 'Prévisualisation des design tokens'
     : `Prévisualisation de ${entry.type === 'page' ? 'la page' : 'du composant'} ${entry.name}`
+  applyQualityMode(entry)
+
   // Les tokens ne se règlent pas ici : on renvoie vers leur fichier source.
   elements.empty.hidden = entry.type !== 'tokens'
   if (entry.type === 'tokens') elements.empty.textContent = 'Les tokens se modifient dans leur fichier source (voir en tête de l’aperçu) ; la page se met à jour à l’enregistrement.'
@@ -456,6 +461,27 @@ function runQualityChecks() {
   requestAxeAudit(report)
 
   runW3cCheck(report)
+}
+
+// Tokens : Axe, W3C et débordement contrôleraient l'habillage de l'outil, pas le design system.
+// Seuls les contrastes entre rôles ont du sens ; ils sont calculés depuis le fichier de tokens.
+function applyQualityMode(entry) {
+  const isTokens = entry.type === 'tokens'
+  for (const element of [elements.w3cBadge, elements.axeBadge, elements.overflowBadge, elements.rgaaBadge, elements.qualityAction, elements.qualityOutput]) {
+    element.hidden = isTokens
+  }
+  elements.contrastBadge.hidden = !isTokens
+}
+
+function renderContrastBadge(contrast) {
+  if (!contrast?.total) {
+    setQualityBadge(elements.contrastBadge, 'idle', 'Contrastes · aucune paire de rôles')
+    return
+  }
+  const passing = contrast.total - contrast.failing
+  setQualityBadge(elements.contrastBadge, contrast.failing ? 'fail' : 'pass', contrast.failing
+    ? `Contrastes · ${contrast.failing} insuffisant${contrast.failing > 1 ? 's' : ''} sur ${contrast.total}`
+    : `Contrastes · ${passing}/${contrast.total} conformes`)
 }
 
 function currentQualityContext() {
@@ -853,6 +879,10 @@ function handlePreviewMessage(event) {
     elements.renderStatus.textContent = 'Rendu à jour'
     updateRenderedHtml(event.data.html)
     renderInstances(event.data.instances ?? [])
+    if (state.selected?.type === 'tokens') {
+      renderContrastBadge(event.data.meta?.contrast)
+      return
+    }
     checkQualityIfNeeded()
     return
   }

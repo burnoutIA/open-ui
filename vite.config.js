@@ -284,11 +284,19 @@ function openUIPlugin() {
                 sendJson(res, 404, { error: 'Aucun fichier de tokens dans ce workspace.' })
                 return
               }
+              const tokens = readProjectTokens(CONFIG)
               sendJson(res, 200, {
-                html: renderTokensPage(readProjectTokens(CONFIG)),
+                html: renderTokensPage(tokens),
                 entry: { id: tokensEntry.id, type: 'tokens', key: tokensEntry.key, name: tokensEntry.name, level: tokensEntry.level },
                 props: {},
-                instances: []
+                instances: [],
+                // Seul contrôle pertinent pour les tokens : les paires de contraste des rôles.
+                meta: {
+                  contrast: {
+                    total: tokens?.contrast.length ?? 0,
+                    failing: tokens?.contrast.filter((pair) => !pair.ok).length ?? 0
+                  }
+                }
               })
               return
             }
