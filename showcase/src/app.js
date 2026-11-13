@@ -176,7 +176,10 @@ function renderCatalog(query) {
       const category = document.createElement('span')
       category.className = 'component-button__category'
       category.textContent = entry.type === 'page' ? 'Page complète' : entry.category
-      const qualitySummary = summarizeQualityReport(state.qualityReports.get(entry.key))
+      // Tokens : le badge résume les contrastes des rôles, seul contrôle qui les concerne.
+      const qualitySummary = entry.type === 'tokens'
+        ? summarizeContrast(entry.contrast)
+        : summarizeQualityReport(state.qualityReports.get(entry.key))
       const quality = document.createElement('span')
       quality.className = 'component-button__quality'
       quality.dataset.status = qualitySummary.status
@@ -474,6 +477,13 @@ function applyQualityMode(entry) {
   elements.contrastBadge.hidden = !isTokens
 }
 
+function summarizeContrast(contrast) {
+  if (!contrast?.total) return { status: 'idle', label: 'Aucune paire de contraste', catalogLabel: '—' }
+  return contrast.failing
+    ? { status: 'fail', label: `${contrast.failing} contraste${contrast.failing > 1 ? 's' : ''} insuffisant${contrast.failing > 1 ? 's' : ''}`, catalogLabel: String(contrast.failing) }
+    : { status: 'pass', label: 'Contrastes conformes', catalogLabel: 'OK' }
+}
+
 function renderContrastBadge(contrast) {
   if (!contrast?.total) {
     setQualityBadge(elements.contrastBadge, 'idle', 'Contrastes · aucune paire de rôles')
@@ -497,6 +507,7 @@ function currentQualityContext() {
 // Badges du catalogue après un rechargement : derniers résultats encore valables pour les props par défaut.
 function restoreCatalogQuality() {
   for (const entry of state.entries) {
+    if (entry.type === 'tokens') continue
     const context = contextKey({
       props: getComponentDefaults(entry),
       background: elements.background.value,
@@ -882,6 +893,8 @@ function handlePreviewMessage(event) {
     renderInstances(event.data.instances ?? [])
     if (state.selected?.type === 'tokens') {
       renderContrastBadge(event.data.meta?.contrast)
+      state.selected.contrast = event.data.meta?.contrast
+      renderCatalog(elements.search.value)
       return
     }
     checkQualityIfNeeded()

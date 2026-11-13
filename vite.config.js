@@ -252,6 +252,10 @@ function openUIPlugin() {
 
           // Les tokens ouvrent le catalogue : c'est l'étape 1 du design system.
           const tokensEntry = tokensCatalogEntry(CONFIG)
+          if (tokensEntry) {
+            const pairs = readProjectTokens(CONFIG)?.contrast ?? []
+            tokensEntry.contrast = { total: pairs.length, failing: pairs.filter((pair) => !pair.ok).length }
+          }
           const components = getComponentEntries()
           const pages = getPageEntries()
           const versions = computeSourceVersions({ components, pages, config: CONFIG, root: ROOT })

@@ -126,6 +126,7 @@ test('design tokens : page des fondations', async ({ page }) => {
   // Seul contrôle pertinent : les contrastes des rôles ; Axe, W3C et débordement sont masqués.
   await expect(page.locator('#contrast-badge')).toHaveText(/^Contrastes · \d+\/\d+ conformes$/, { timeout: 20_000 })
   await expect(page.locator('#contrast-badge')).toHaveAttribute('data-status', 'pass')
+  await expect(page.locator('[data-entry-key="tokens:tokens"] .component-button__quality'), 'badge du catalogue').toHaveText('OK')
   for (const hidden of ['#axe-badge', '#w3c-badge', '#overflow-badge', '#run-quality', '#quality-output', '#html-output']) {
     await expect(page.locator(hidden)).toBeHidden()
   }
