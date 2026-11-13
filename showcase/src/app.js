@@ -54,6 +54,7 @@ const elements = {
   rgaaBadge: document.querySelector('#rgaa-badge'),
   contrastBadge: document.querySelector('#contrast-badge'),
   qualityAction: document.querySelector('.quality-action'),
+  htmlOutput: document.querySelector('#html-output'),
   axeSummary: document.querySelector('#axe-summary'),
   axeResults: document.querySelector('#axe-results'),
   background: document.querySelector('#preview-background')
@@ -463,11 +464,11 @@ function runQualityChecks() {
   runW3cCheck(report)
 }
 
-// Tokens : Axe, W3C et débordement contrôleraient l'habillage de l'outil, pas le design system.
-// Seuls les contrastes entre rôles ont du sens ; ils sont calculés depuis le fichier de tokens.
+// Tokens : Axe, W3C, débordement et HTML généré porteraient sur l'habillage de l'outil, pas sur le design
+// system. Seuls les contrastes entre rôles ont du sens ; ils sont calculés depuis le fichier de tokens.
 function applyQualityMode(entry) {
   const isTokens = entry.type === 'tokens'
-  for (const element of [elements.w3cBadge, elements.axeBadge, elements.overflowBadge, elements.rgaaBadge, elements.qualityAction, elements.qualityOutput]) {
+  for (const element of [elements.w3cBadge, elements.axeBadge, elements.overflowBadge, elements.rgaaBadge, elements.qualityAction, elements.qualityOutput, elements.htmlOutput]) {
     element.hidden = isTokens
   }
   elements.contrastBadge.hidden = !isTokens

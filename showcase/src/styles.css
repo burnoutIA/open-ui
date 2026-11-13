@@ -1400,6 +1400,7 @@ a:focus-visible {
 /* Contrôles masqués selon l'entrée (page des tokens) : l'attribut hidden l'emporte sur les display. */
 .quality-action[hidden],
 .quality-badge[hidden],
-.quality-output[hidden] {
+.quality-output[hidden],
+.html-output[hidden] {
   display: none;
 }
