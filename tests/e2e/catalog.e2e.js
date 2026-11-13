@@ -2,7 +2,8 @@
 // puis ouvert dans le Showcase : badge Axe, aucune erreur JavaScript, une seule zone de défilement.
 // La liste vient du disque : le test suit le contenu de dev/ sans rien déclarer.
 import { expect, test } from '@playwright/test'
-import { getComponentEntries, getPageEntries } from '../../scripts/design-system.js'
+import fs from 'fs'
+import { getComponentEntries, getPageEntries, OPENUI_CONFIG } from '../../scripts/design-system.js'
 import { buildCases, render, runAxe } from '../../scripts/snapshot.js'
 
 const entries = [
@@ -112,3 +113,18 @@ for (const entry of entries.filter((candidate) => candidate.type === 'page')) {
     expect(errors, 'erreurs JavaScript').toEqual([])
   })
 }
+
+test('design tokens : page des fondations', async ({ page }) => {
+  test.skip(!fs.existsSync(OPENUI_CONFIG.tokensFile), 'pas de fichier de tokens')
+  const errors = collectPageErrors(page)
+  await page.goto(`/showcase/#${encodeURIComponent('tokens:tokens')}`)
+  await expect(page.locator('#component-title')).toHaveText('Design tokens')
+
+  const preview = page.frameLocator('#preview-frame')
+  await expect(preview.locator('.ot-section').first()).toBeVisible({ timeout: 20_000 })
+  await expect(preview.locator('.ot-swatch').first(), 'palette affichée').toBeVisible()
+  await expect(page.locator('#axe-badge')).toHaveAttribute('data-status', /^(pass|review)$/, { timeout: 20_000 })
+  await expect(page.locator('#overflow-badge')).toHaveText('Débordement · aucun')
+  await expect(preview.locator('.ot-contrast__pair--fail'), 'aucun contraste insuffisant').toHaveCount(0)
+  expect(errors, 'erreurs JavaScript').toEqual([])
+})

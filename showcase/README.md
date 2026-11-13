@@ -18,6 +18,7 @@ Puis ouvrir `/showcase/` depuis l'index Open UI.
 - `dev/` reste la source locale du projet utilisateur.
 - `dev/` peut être absent ou vide : le catalogue expose alors un état de démarrage sans erreur ;
 - le point d'entrée des styles (`styleEntry` de `openui.config.json`, SCSS ou Tailwind) est chargé par un module virtuel et remplacé par une feuille vide tant que ce fichier n'existe pas ;
+- l'entrée `Design tokens` (section Fondations, en tête du catalogue) affiche les tokens du fichier source du projet, en SCSS comme en Tailwind : palette, rôles et contrastes garantis, polices, échelles, rayons, ombres, mouvement, mise en page, points de rupture ; les échantillons utilisent la feuille du projet, cliquer un nom copie son `var(--…)` ;
 - le panneau `HTML généré` colore le code avec Prism ; la copie reste le HTML brut ;
 - le conteneur d'un composant est dessiné en pointillés ; un débordement reste visible (sans barre de défilement), passe en rouge et s'affiche dans le badge `Débordement` ; pour une page, le badge signale un défilement horizontal ;
 - pour une page, la section `Composants de la page` liste chaque composant posé par la page et son gabarit (détecté au rendu, rien à déclarer) : chacun se modifie et se stresse séparément, temporairement ;

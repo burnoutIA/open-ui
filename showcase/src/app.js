@@ -4,8 +4,9 @@ import { summarizeQualityReport } from './quality-state.js'
 import { isCurrentRender, normalizeRenderedHtml } from './render-state.js'
 import { highlightHtml } from './html-highlight.js'
 
-const LEVEL_ORDER = ['page', 'atom', 'molecule', 'organism', 'template']
+const LEVEL_ORDER = ['foundation', 'page', 'atom', 'molecule', 'organism', 'template']
 const LEVEL_LABELS = {
+  foundation: 'Fondations',
   page: 'Pages',
   atom: 'Atoms',
   molecule: 'Molécules',
@@ -209,12 +210,18 @@ function selectEntry(entryKey, updateHash = true) {
 
   if (updateHash) history.replaceState(null, '', `#${encodeURIComponent(entry.key)}`)
 
-  elements.componentMeta.textContent = [entry.type === 'page' ? 'page' : entry.level, entry.category, entry.id].filter(Boolean).join(' · ')
+  elements.componentMeta.textContent = entry.type === 'tokens'
+    ? 'fondations · tokens'
+    : [entry.type === 'page' ? 'page' : entry.level, entry.category, entry.id].filter(Boolean).join(' · ')
   elements.componentTitle.textContent = entry.name
   elements.componentDescription.textContent = entry.description
-  elements.previewFrame.title = `Prévisualisation de ${entry.type === 'page' ? 'la page' : 'du composant'} ${entry.name}`
-  elements.empty.hidden = true
-  elements.reset.disabled = false
+  elements.previewFrame.title = entry.type === 'tokens'
+    ? 'Prévisualisation des design tokens'
+    : `Prévisualisation de ${entry.type === 'page' ? 'la page' : 'du composant'} ${entry.name}`
+  // Les tokens ne se règlent pas ici : on renvoie vers leur fichier source.
+  elements.empty.hidden = entry.type !== 'tokens'
+  if (entry.type === 'tokens') elements.empty.textContent = 'Les tokens se modifient dans leur fichier source (voir en tête de l’aperçu) ; la page se met à jour à l’enregistrement.'
+  elements.reset.disabled = entry.type === 'tokens'
 
   renderControls(elements.controls, entry, state.props, updateProp)
   renderComposition(elements.composition, entry)

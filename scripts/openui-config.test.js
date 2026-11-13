@@ -23,7 +23,8 @@ describe('loadOpenUIConfig', () => {
     expect(loadOpenUIConfig(dir)).toEqual({
       styling: 'scss',
       styleEntry: path.join(dir, 'dev/assets/scss/style.scss'),
-      scriptEntry: path.join(dir, 'dev/assets/js/main.js')
+      scriptEntry: path.join(dir, 'dev/assets/js/main.js'),
+      tokensFile: path.join(dir, 'dev/assets/scss/base/_tokens.scss')
     })
   })
 

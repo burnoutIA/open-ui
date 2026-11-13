@@ -8,6 +8,7 @@ import { getShowcaseCatalog, getShowcaseEntry, normalizeShowcaseProps } from './
 import { readJsonBody, sendJson } from './showcase/server/http.js'
 import { EMPTY_PROJECT_SCRIPT, EMPTY_PROJECT_STYLESHEET } from './showcase/server/project-style.js'
 import { validateHtmlWithW3c } from './showcase/server/html-validator.js'
+import { readProjectTokens, renderTokensPage, tokensCatalogEntry } from './showcase/server/tokens.js'
 import { loadOpenUIConfig } from './scripts/openui-config.js'
 import { renderTwig as renderTwigFile } from './scripts/twig-renderer.js'
 
@@ -247,7 +248,9 @@ function openUIPlugin() {
             return
           }
 
-          const entries = getShowcaseCatalog()
+          // Les tokens ouvrent le catalogue : c'est l'étape 1 du design system.
+          const tokensEntry = tokensCatalogEntry(CONFIG)
+          const entries = [...(tokensEntry ? [tokensEntry] : []), ...getShowcaseCatalog()]
           sendJson(res, 200, {
             entries,
             counts: {
@@ -268,6 +271,22 @@ function openUIPlugin() {
             const payload = await readJsonBody(req)
             const entryType = typeof payload.entryType === 'string' ? payload.entryType : ''
             const entryId = typeof payload.entryId === 'string' ? payload.entryId : ''
+
+            if (entryType === 'tokens') {
+              const tokensEntry = tokensCatalogEntry(CONFIG)
+              if (!tokensEntry) {
+                sendJson(res, 404, { error: 'Aucun fichier de tokens dans ce workspace.' })
+                return
+              }
+              sendJson(res, 200, {
+                html: renderTokensPage(readProjectTokens(CONFIG)),
+                entry: { id: tokensEntry.id, type: 'tokens', key: tokensEntry.key, name: tokensEntry.name, level: tokensEntry.level },
+                props: {},
+                instances: []
+              })
+              return
+            }
+
             const entry = getShowcaseEntry(entryType, entryId)
 
             if (!entry) {
@@ -367,6 +386,14 @@ function openUIPlugin() {
       const isProjectContract = file.includes(`${path.sep}dev${path.sep}`) && /\.(twig|json)$/.test(file)
       const isSketch = file.includes(`${path.sep}dev${path.sep}sketches${path.sep}`)
       const isProjectStylesheet = path.resolve(file) === PROJECT_STYLESHEET
+      // Page des tokens rendue côté serveur : un changement du fichier de tokens la recharge.
+      const isTokensFile = path.resolve(file) === CONFIG.tokensFile
+
+      if (isTokensFile && !isProjectStylesheet) {
+        clearTimeout(fullReloadTimer)
+        fullReloadTimer = setTimeout(() => server.ws.send({ type: 'full-reload' }), FULL_RELOAD_DELAY)
+        return
+      }
 
       if (isProjectContract || isSketch || isProjectStylesheet) {
         // En Tailwind, un Twig modifié peut introduire de nouvelles classes : la feuille doit être régénérée.

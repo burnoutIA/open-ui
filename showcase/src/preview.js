@@ -22,6 +22,19 @@ document.addEventListener('click', (event) => {
   if (link) event.preventDefault()
 })
 
+// Page des tokens : cliquer un nom copie son var(--…) pour l'utiliser dans un composant.
+document.addEventListener('click', async (event) => {
+  const button = event.target.closest('[data-copy-token]')
+  if (!button) return
+  const status = document.querySelector('[data-copy-status]')
+  try {
+    await navigator.clipboard.writeText(button.dataset.copyToken)
+    if (status) status.textContent = `${button.dataset.copyToken} copié`
+  } catch {
+    if (status) status.textContent = `Copie impossible : ${button.dataset.copyToken}`
+  }
+})
+
 const resizeObserver = new ResizeObserver(reportHeight)
 resizeObserver.observe(root)
 

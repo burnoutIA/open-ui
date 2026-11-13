@@ -25,9 +25,13 @@ export function loadOpenUIConfig(root = process.cwd()) {
   const styleEntry = raw.styleEntry ?? DEFAULT_STYLE_ENTRIES[styling]
   const scriptEntry = raw.scriptEntry ?? DEFAULT_SCRIPT_ENTRY
 
+  const resolvedStyleEntry = path.resolve(root, styleEntry.replace(/^\/+/, ''))
+
   return {
     styling,
-    styleEntry: path.resolve(root, styleEntry.replace(/^\/+/, '')),
-    scriptEntry: path.resolve(root, scriptEntry.replace(/^\/+/, ''))
+    styleEntry: resolvedStyleEntry,
+    scriptEntry: path.resolve(root, scriptEntry.replace(/^\/+/, '')),
+    // Tokens : base/_tokens.scss à côté du point d'entrée en SCSS, bloc @theme du point d'entrée en Tailwind.
+    tokensFile: styling === 'scss' ? path.join(path.dirname(resolvedStyleEntry), 'base/_tokens.scss') : resolvedStyleEntry
   }
 }

@@ -34,6 +34,10 @@ Roles du kit :
 
 Changer l'identite d'un projet = modifier la palette ou rebrancher un role, sans toucher aux composants. Ajouter un role quand un besoin d'intention apparait, pas pour un cas isole.
 
+## Consulter les tokens
+
+Le Showcase ouvre sur l'entrée `Design tokens` : tous les tokens du fichier source, rendus avec la feuille du projet (couleurs, polices et ombres réelles), les contrastes garantis et les points de rupture. Cliquer un nom copie son `var(--…)`. La page se met à jour à l'enregistrement du fichier.
+
 ## Contrastes garantis
 
 Les paires de roles sont verifiees par `scripts/tokens-contrast.js` : texte/surface, `on-*`/action, `*-text`/`*-surface`, lien, bordure de controle et focus (4.5:1 pour le texte, 3:1 pour les contours et le focus).

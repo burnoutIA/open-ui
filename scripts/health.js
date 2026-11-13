@@ -175,9 +175,7 @@ function checkLayouts() {
 if ((components.length || pages.length) && !fs.existsSync(stylePath)) add('error', 'styles', stylePath, 'Point d’entrée des styles absent')
 // Tokens : _tokens.scss à côté du point d'entrée en SCSS, bloc @theme du point d'entrée en Tailwind.
 function checkTokens() {
-  const tokensPath = OPENUI_CONFIG.styling === 'scss'
-    ? path.join(path.dirname(stylePath), 'base/_tokens.scss')
-    : stylePath
+  const tokensPath = OPENUI_CONFIG.tokensFile
   if (!fs.existsSync(tokensPath)) return
 
   for (const pair of checkTokenContrast(fs.readFileSync(tokensPath, 'utf8'))) {
